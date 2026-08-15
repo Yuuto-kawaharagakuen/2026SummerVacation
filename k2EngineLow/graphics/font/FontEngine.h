@@ -15,6 +15,13 @@ namespace nsK2EngineLow {
 	/// font.Draw("Hello world", pos, color, rot, scale, pivot);
 	/// font.EndDraw( renderContext );
 	/// </example>
+	 enum class enFontType
+	{
+		Gothic,   // 既存のDela Gothic One
+			Bold,     // Noto Sans JP Bold
+			Rounded,  // Zen Maru Gothic
+			enNum     // フォント種類の数
+	};
 	class FontEngine : public Noncopyable {
 
 	public:
@@ -44,15 +51,16 @@ namespace nsK2EngineLow {
 			const Vector4& color,
 			float rotation,
 			float scale,
-			Vector2 pivot
+			Vector2 pivot,
+			enFontType fontType = enFontType::Gothic  // ← 追加、デフォルトは既存Gothic
 		);
 		/// <summary>
 		/// 描画終了。
 		/// </summary>
 		void EndDraw(RenderContext& rc);
 	private:
-		std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;	//スプライトバッチ。
-		std::unique_ptr<DirectX::SpriteFont>	m_spriteFont;	//スプライトフォント。
-		ID3D12DescriptorHeap* m_srvDescriptorHeap = nullptr;	//SRVのディスクリプタヒープ。
+		ID3D12DescriptorHeap* m_srvDescriptorHeap = nullptr;
+		std::unique_ptr<DirectX::SpriteBatch> m_spriteBatch;
+		std::unique_ptr<DirectX::SpriteFont> m_spriteFonts[(int)enFontType::enNum];  // ← 配列化
 	};
 }

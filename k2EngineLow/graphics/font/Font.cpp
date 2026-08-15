@@ -62,8 +62,8 @@ namespace nsK2EngineLow {
 					m_shadowColor,
 					rotation,
 					scale,
-					pivot
-
+					pivot,
+					m_fontType
 				);
 			}
 
@@ -74,7 +74,8 @@ namespace nsK2EngineLow {
 			color,
 			rotation,
 			scale,
-			pivot
+			pivot,
+			m_fontType
 		);
 	}
 }

@@ -9,6 +9,13 @@ namespace nsK2Engine {
 	class FontRender : public IRenderer
 	{
 	public:
+		/// <summary>
+	/// 使用するフォント種別を設定。
+	/// </summary>
+		void SetFontType(enFontType fontType)
+		{
+			m_font.SetFontType(fontType);
+		}
 		static const int MAX_TEXT_SIZE = 256;
 		~FontRender()
 		{

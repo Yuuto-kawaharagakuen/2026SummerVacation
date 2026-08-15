@@ -12,6 +12,11 @@
       <Filter>system</Filter>
     </ClCompile>
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="ScoreCategory.cpp" />
+    <ClCompile Include="CpuPlayer.cpp" />
+    <ClCompile Include="DiceRound.cpp" />
+    <ClCompile Include="DiceInputController.cpp" />
+    <ClCompile Include="Dice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -19,5 +24,10 @@
       <Filter>system</Filter>
     </ClInclude>
     <ClInclude Include="Game.h" />
+    <ClInclude Include="ScoreCategory.h" />
+    <ClInclude Include="CpuPlayer.h" />
+    <ClInclude Include="DiceRound.h" />
+    <ClInclude Include="DiceInputController.h" />
+    <ClInclude Include="Dice.h" />
   </ItemGroup>
 </Project>

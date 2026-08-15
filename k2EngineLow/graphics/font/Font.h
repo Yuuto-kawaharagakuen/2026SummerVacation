@@ -53,6 +53,13 @@ namespace nsK2EngineLow {
 			m_shadowOffset = shadowOffset;
 			m_shadowColor = shadowColor;
 		}
+		/// <summary>
+	/// 使用するフォント種別を設定。
+	/// </summary>
+		void SetFontType(enFontType fontType)
+		{
+			m_fontType = fontType;
+		}
 	private:
 		DirectX::SpriteBatch* m_spriteBatch = nullptr;		//　スプライトバッチ。
 		DirectX::SpriteFont* m_spriteFont = nullptr;		//　スプライトフォント。
@@ -60,5 +67,6 @@ namespace nsK2EngineLow {
 		float m_shadowOffset = 0.0f;						//　影を書くときのピクセルのオフセット量。
 		Vector4 m_shadowColor;								//　影の色。
 		Matrix m_scaleMat;
+		enFontType m_fontType = enFontType::Gothic;
 	};
 }

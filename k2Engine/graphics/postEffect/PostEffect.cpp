@@ -72,16 +72,16 @@ namespace nsK2Engine {
         
         if (g_renderingEngine->IsEnableRaytracing() == false) {
             // レイトレをしていないならSSRを行う。
-            m_ssr.Render(rc, mainRenderTarget);
+            //m_ssr.Render(rc, mainRenderTarget);
         }
         // シーンの輝度を計算する。
         m_calsSceneLuminance.Render(rc, mainRenderTarget);
 
         // ブルーム
-        m_bloom.Render(rc, mainRenderTarget);
+        //m_bloom.Render(rc, mainRenderTarget);
 
         // トーンマップ
-        m_tonemap.Render(rc, mainRenderTarget);
+        //m_tonemap.Render(rc, mainRenderTarget);
 
         g_renderingEngine->SetMainRenderTargetAndDepthStencilBuffer(rc);
 
