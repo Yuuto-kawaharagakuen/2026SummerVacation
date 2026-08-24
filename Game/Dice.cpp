@@ -3,7 +3,7 @@
 
 namespace
 {
-	const float kDiceHalfSize = 15.0f; // ダイスの大きさ(モデル完成後に実寸に合わせて調整)
+	const float kDiceHalfSize = 15.0f; 
 }
 
 void Dice::Init(const Vector3& startPos)
@@ -26,24 +26,26 @@ void Dice::Init(const Vector3& startPos)
 
 void Dice::Roll()
 {
-	Vector3 vel(
-		(float)(rand() % 400 - 200),
-		400.0f,
-		(float)(rand() % 400 - 200)
-	);
-	m_rigidBody.SetLinearVelocity(vel);
+	// 現在のXZ位置は維持しつつ、Y=100の高さに戻してから落とす
+	Vector3 dropPos = m_position;
+	dropPos.y = 100.0f;
+	m_rigidBody.SetPositionAndRotation(dropPos, Quaternion::Identity);
+
+	m_rigidBody.SetLinearVelocity(Vector3::Zero);
 
 	Vector3 angularVel(
-		(float)(rand() % 1000 - 500) * 0.01f,
-		(float)(rand() % 1000 - 500) * 0.01f,
-		(float)(rand() % 1000 - 500) * 0.01f
+		(float)(rand() % 1000 - 500) * 0.02f,
+		(float)(rand() % 1000 - 500) * 0.02f,
+		(float)(rand() % 1000 - 500) * 0.02f
 	);
 	m_rigidBody.SetAngularVelocity(angularVel);
+	m_settleCheckDelay = 20;
 }
 
 void Dice::Update()
 {
 	m_rigidBody.GetPositionAndRotation(m_position, m_rotation);
+	if (m_settleCheckDelay > 0) m_settleCheckDelay--;
 	// モデルができたら以下を有効化
 	// m_modelRender.SetPosition(m_position);
 	// m_modelRender.SetRotation(m_rotation);
@@ -57,6 +59,7 @@ void Dice::Render(RenderContext& rc)
 
 bool Dice::IsSettled() const
 {
+	if (m_settleCheckDelay > 0) return false; // 猶予中は絶対に静止扱いにしない
 	Vector3 vel = m_rigidBody.GetLinearVelocity();
 	return vel.Length() < 1.0f;
 }

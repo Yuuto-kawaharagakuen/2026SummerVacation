@@ -63,6 +63,21 @@ bool Game::Start()
 {
 	srand((unsigned int)time(nullptr));
 
+	m_trayModelRender.Init("Assets/modelData/Tray.tkm");
+	m_trayModelRender.SetPosition(Vector3(0.0f, -20.0f, 0.0f));
+	
+	m_trayCollider.CreateFromModel(m_trayModelRender.GetModel(),Matrix::Identity); //モデルの座標系に合わせて作成
+
+	RigidBodyInitData trayInfo;
+	trayInfo.pos = Vector3(0.0f, 0.0f, 0.0f);
+	trayInfo.rot = Quaternion::Identity;
+	trayInfo.collider = &m_trayCollider;
+	trayInfo.mass = 0.0f;
+	m_trayRigidBody.Init(trayInfo);
+
+	g_camera3D->SetPosition(Vector3(-100.0f, 350.0f, 0.0f));
+	//g_camera3D->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
+
 	m_playerRound.StartNewRound();
 	OutputDebugStringW(L"---- プレイヤーのターン開始 ----\n");
 	{
@@ -71,17 +86,53 @@ bool Game::Start()
 		swprintf_s(buf, L"1投目:[%d,%d,%d,%d,%d]\n", dice[0], dice[1], dice[2], dice[3], dice[4]);
 		OutputDebugStringW(buf);
 	}
-	m_modelRender.Init("Assets/modelData/unityChan.tkm");
+
+	// ---- ダイス物理検証用 ----
+	m_floorCollider.Create(Vector3(500.0f, 10.0f, 500.0f));
+	RigidBodyInitData floorInfo;
+	floorInfo.pos = Vector3(0.0f, 0.0f, 0.0f);
+	floorInfo.rot = Quaternion::Identity;
+	floorInfo.collider = &m_floorCollider;
+	floorInfo.mass = 0.0f;
+	m_floorRigidBody.Init(floorInfo);
+
+	m_testDice.Init(Vector3(0.0f, 100.0f, 0.0f));
+	m_testDice.Roll();
+	OutputDebugStringW(L"---- テストダイス投擲 ----\n");
+
 	return true;
 }
 
 void Game::Update()
 {
 	m_inputController.Update(m_playerRound);
-	m_modelRender.Update();
+	m_trayModelRender.Update();
+
+	// ---- ダイス物理検証用 ----
+	m_testDice.Update();
+
+	static int frameCount = 0;
+	frameCount++;
+	if (frameCount % 30 == 0) // 約0.5秒ごと(60fps想定)
+	{
+		Vector3 pos = m_testDice.GetPosition();
+		Vector3 vel = m_testDice.GetVelocity();
+		wchar_t buf[128];
+		swprintf_s(buf, L"[診断] 座標:(%.1f, %.1f, %.1f) 速度:(%.1f, %.1f, %.1f)\n",
+			pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
+		OutputDebugStringW(buf);
+	}
+
+	if (!m_hasPrintedResult && m_testDice.IsSettled())
+	{
+		wchar_t buf[64];
+		swprintf_s(buf, L"テストダイス出目: %d\n", m_testDice.GetFaceValue());
+		OutputDebugStringW(buf);
+		m_hasPrintedResult = true;
+	}
 }
 
 void Game::Render(RenderContext& rc)
 {
-	m_modelRender.Draw(rc);
+	m_trayModelRender.Draw(rc);
 }
