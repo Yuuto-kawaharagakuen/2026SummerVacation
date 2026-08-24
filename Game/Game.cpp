@@ -87,19 +87,13 @@ bool Game::Start()
 		OutputDebugStringW(buf);
 	}
 
-	// ---- ダイス物理検証用 ----
-	m_floorCollider.Create(Vector3(500.0f, 10.0f, 500.0f));
-	RigidBodyInitData floorInfo;
-	floorInfo.pos = Vector3(0.0f, 0.0f, 0.0f);
-	floorInfo.rot = Quaternion::Identity;
-	floorInfo.collider = &m_floorCollider;
-	floorInfo.mass = 0.0f;
-	m_floorRigidBody.Init(floorInfo);
-
-	m_testDice.Init(Vector3(0.0f, 100.0f, 0.0f));
-	m_testDice.Roll();
-	OutputDebugStringW(L"---- テストダイス投擲 ----\n");
-
+	for (int i = 0; i < kDiceNum; i++)
+	{
+		// 重ならないように、少しずつXZをずらして配置
+		float offsetX = (i - 2) * 20.0f; // -40, -20, 0, 20, 40くらいに散らす
+		m_dices[i].Init(Vector3(offsetX, 100.0f, 0.0f));
+		m_dices[i].Roll();
+	}
 	return true;
 }
 
@@ -107,32 +101,24 @@ void Game::Update()
 {
 	m_inputController.Update(m_playerRound);
 	m_trayModelRender.Update();
-
-	// ---- ダイス物理検証用 ----
-	m_testDice.Update();
-
-	static int frameCount = 0;
-	frameCount++;
-	if (frameCount % 30 == 0) // 約0.5秒ごと(60fps想定)
+	for (int i = 0; i < kDiceNum; i++)
 	{
-		Vector3 pos = m_testDice.GetPosition();
-		Vector3 vel = m_testDice.GetVelocity();
-		wchar_t buf[128];
-		swprintf_s(buf, L"[診断] 座標:(%.1f, %.1f, %.1f) 速度:(%.1f, %.1f, %.1f)\n",
-			pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
-		OutputDebugStringW(buf);
-	}
-
-	if (!m_hasPrintedResult && m_testDice.IsSettled())
-	{
-		wchar_t buf[64];
-		swprintf_s(buf, L"テストダイス出目: %d\n", m_testDice.GetFaceValue());
-		OutputDebugStringW(buf);
-		m_hasPrintedResult = true;
+		m_dices[i].Update();
+		if (!m_hasPrintedResult[i] && m_dices[i].IsSettled())
+		{
+			wchar_t buf[64];
+			swprintf_s(buf, L"ダイス%d 出目: %d\n", i + 1, m_dices[i].GetFaceValue());
+			OutputDebugStringW(buf);
+			m_hasPrintedResult[i] = true;
+		}
 	}
 }
 
 void Game::Render(RenderContext& rc)
 {
 	m_trayModelRender.Draw(rc);
+	for (int i = 0; i < kDiceNum; i++)
+	{
+		m_dices[i].Render(rc);
+	}
 }

@@ -16,6 +16,11 @@ public:
 	void Render(RenderContext& rc);
 
 private:
+
+    static const int kDiceNum = 5;
+	Dice m_dices[kDiceNum];
+	bool m_hasPrintedResult[kDiceNum] = {};
+
 	ModelRender m_trayModelRender;
 	DiceRound m_playerRound;
 	DiceInputController m_inputController;
@@ -23,10 +28,5 @@ private:
 
 	MeshCollider m_trayCollider;
 	RigidBody m_trayRigidBody;
-
-	BoxCollider m_floorCollider;
-	RigidBody m_floorRigidBody;
-    Dice m_testDice;
-	bool m_hasPrintedResult = false;
 };
 
