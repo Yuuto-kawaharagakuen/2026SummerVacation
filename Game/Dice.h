@@ -13,6 +13,7 @@ public:
 
 	const Vector3& GetPosition() const { return m_position; }
 	Vector3 GetVelocity() const { return m_rigidBody.GetLinearVelocity(); }
+	Vector3 GetAngularVelocity() const { return m_rigidBody.GetAngularVelocity(); }
 private:
 	ModelRender m_modelRender;
 	BoxCollider m_collider;

@@ -3,34 +3,41 @@
 
 namespace
 {
-	const float kDiceHalfSize = 15.0f; 
+	const float kDiceHalfSize = 15.0f*0.5f; 
 }
 
 void Dice::Init(const Vector3& startPos)
 {
-	// モデルはまだ無いので、パスは仮。完成したらここを差し替えるだけでOK。
-	// m_modelRender.Init("Assets/modelData/dice.tkm");
+	m_modelRender.Init("Assets/modelData/Dice.tkm"); 
+	m_collider.Create(Vector3(kDiceHalfSize * 4.0f, kDiceHalfSize * 4.0f, kDiceHalfSize * 4.0f));
 
-	m_collider.Create(Vector3(kDiceHalfSize, kDiceHalfSize, kDiceHalfSize));
 
 	RigidBodyInitData rbInfo;
 	rbInfo.pos = startPos;
 	rbInfo.rot = Quaternion::Identity;
 	rbInfo.collider = &m_collider;
-	rbInfo.mass = 1.0f;          // 動く剛体にする
-	rbInfo.restitution = 0.3f;   // 少し跳ねる
+	rbInfo.mass = 1.0f;
+	rbInfo.restitution = 0.6f;
 	m_rigidBody.Init(rbInfo);
 
 	m_rigidBody.SetFriction(0.6f);
+	m_rigidBody.SetCcd(kDiceHalfSize, kDiceHalfSize * 0.9f);
 }
 
 void Dice::Roll()
 {
-	// 現在のXZ位置は維持しつつ、Y=100の高さに戻してから落とす
+	// 現在のXZ位置は維持しつつ、Y=40の高さに戻してから落とす
 	Vector3 dropPos = m_position;
-	dropPos.y = 100.0f;
-	m_rigidBody.SetPositionAndRotation(dropPos, Quaternion::Identity);
+	dropPos.y = 200.0f;
+	// 落とす瞬間の初期姿勢をランダムにする(常にY軸基準にならないように)
+	Quaternion rotX, rotY, rotZ;
+	rotX.SetRotationDeg(Vector3::AxisX, (float)(rand() % 360));
+	rotY.SetRotationDeg(Vector3::AxisY, (float)(rand() % 360));
+	rotZ.SetRotationDeg(Vector3::AxisZ, (float)(rand() % 360));
+	Quaternion startRot = rotX * rotY * rotZ; 
 
+
+	m_rigidBody.SetPositionAndRotation(dropPos, Quaternion::Identity);
 	m_rigidBody.SetLinearVelocity(Vector3::Zero);
 
 	Vector3 angularVel(
@@ -46,22 +53,23 @@ void Dice::Update()
 {
 	m_rigidBody.GetPositionAndRotation(m_position, m_rotation);
 	if (m_settleCheckDelay > 0) m_settleCheckDelay--;
-	// モデルができたら以下を有効化
-	// m_modelRender.SetPosition(m_position);
-	// m_modelRender.SetRotation(m_rotation);
-	// m_modelRender.Update();
+	 m_modelRender.SetPosition(m_position);
+	 m_modelRender.SetRotation(m_rotation);
+	 m_modelRender.SetScale(Vector3(0.5f, 0.5f, 0.5f)); 
+	 m_modelRender.Update();
 }
 
 void Dice::Render(RenderContext& rc)
 {
-	// m_modelRender.Draw(rc);
+	m_modelRender.Draw(rc);
 }
 
 bool Dice::IsSettled() const
 {
-	if (m_settleCheckDelay > 0) return false; // 猶予中は絶対に静止扱いにしない
+	if (m_settleCheckDelay > 0) return false; 
 	Vector3 vel = m_rigidBody.GetLinearVelocity();
-	return vel.Length() < 1.0f;
+	Vector3 angVel = m_rigidBody.GetAngularVelocity();
+	return vel.Length() < 1.0f && angVel.Length() < 1.0f;
 }
 
 int Dice::GetFaceValue() const

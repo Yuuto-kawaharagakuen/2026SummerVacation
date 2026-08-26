@@ -63,19 +63,25 @@ bool Game::Start()
 {
 	srand((unsigned int)time(nullptr));
 
+	//PhysicsWorld::GetInstance()->EnableDrawDebugWireFrame();
+
+    PhysicsWorld::GetInstance()->SetGravity(Vector3(0.0f, -300.0f, 0.0f));
+
 	m_trayModelRender.Init("Assets/modelData/Tray.tkm");
-	m_trayModelRender.SetPosition(Vector3(0.0f, -20.0f, 0.0f));
+	m_trayModelRender.SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 	
-	m_trayCollider.CreateFromModel(m_trayModelRender.GetModel(),Matrix::Identity); //モデルの座標系に合わせて作成
+	Matrix upAxisFix;
+	upAxisFix.MakeRotationX(Math::DegToRad(-90.0f));
+	m_trayCollider.CreateFromModel(m_trayModelRender.GetModel(), upAxisFix);
 
 	RigidBodyInitData trayInfo;
-	trayInfo.pos = Vector3(0.0f, 0.0f, 0.0f);
+	trayInfo.pos = Vector3(0.0f, 10.0f, 0.0f);
 	trayInfo.rot = Quaternion::Identity;
 	trayInfo.collider = &m_trayCollider;
 	trayInfo.mass = 0.0f;
 	m_trayRigidBody.Init(trayInfo);
 
-	g_camera3D->SetPosition(Vector3(-100.0f, 350.0f, 0.0f));
+	g_camera3D->SetPosition(Vector3(-1.0f, 350.0f, 0.0f));
 	//g_camera3D->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
 
 	m_playerRound.StartNewRound();
@@ -90,7 +96,8 @@ bool Game::Start()
 	for (int i = 0; i < kDiceNum; i++)
 	{
 		// 重ならないように、少しずつXZをずらして配置
-		float offsetX = (i - 2) * 20.0f; // -40, -20, 0, 20, 40くらいに散らす
+		float offsetX = (i - 2) * 45.0f; 
+		float offsetZ = ((i % 2 == 0) ? 1.0f : -1.0f) * 15.0f;
 		m_dices[i].Init(Vector3(offsetX, 100.0f, 0.0f));
 		m_dices[i].Roll();
 	}
@@ -100,7 +107,7 @@ bool Game::Start()
 void Game::Update()
 {
 	m_inputController.Update(m_playerRound);
-	m_trayModelRender.Update();
+	m_trayModelRender.Update();   
 	for (int i = 0; i < kDiceNum; i++)
 	{
 		m_dices[i].Update();

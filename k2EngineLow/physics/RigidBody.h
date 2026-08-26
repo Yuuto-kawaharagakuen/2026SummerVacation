@@ -99,6 +99,17 @@ namespace nsK2EngineLow {
 			return vel;
 		}
 		/// <summary>
+        /// 現在の角速度を取得。
+        /// </summary>
+        /// <returns></returns>
+		Vector3 GetAngularVelocity() const
+		{
+			auto& btVel = m_rigidBody->getAngularVelocity();
+			Vector3 vel;
+			vel.Set(btVel.x(), btVel.y(), btVel.z());
+			return vel;
+		}
+		/// <summary>
 		/// 摩擦力を設定する。
 		/// </summary>
 		/// <param name="friction"></param>
@@ -148,6 +159,17 @@ namespace nsK2EngineLow {
 			SetAngularFactor({ x, y, z });
 		}
 		void Release();
+		/// <summary>
+        /// 連続衝突判定(CCD)を有効にする。
+        /// 高速で動く物体が薄い壁をすり抜けてしまう現象(トンネリング)を防ぐ。
+        /// </summary>
+        /// <param name="motionThreshold">1フレームでこの距離以上動いたらCCD判定を行う</param>
+        /// <param name="sweptSphereRadius">CCD判定に使う球の半径(オブジェクトの大きさに合わせる)</param>
+		void SetCcd(float motionThreshold, float sweptSphereRadius)
+		{
+			m_rigidBody->setCcdMotionThreshold(motionThreshold);
+			m_rigidBody->setCcdSweptSphereRadius(sweptSphereRadius);
+		}
 	private:
 		std::unique_ptr<btRigidBody>			m_rigidBody;		//剛体。
 		std::unique_ptr<btDefaultMotionState>	m_myMotionState;	//モーションステート。
