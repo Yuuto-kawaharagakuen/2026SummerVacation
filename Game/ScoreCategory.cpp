@@ -85,6 +85,8 @@ ScoreCategory MakeNumberCategory(enScoreCategoryType type, const wchar_t* name, 
 {
 	ScoreCategory c;
 	c.type = type;
+	c.group = enCategoryGroup::Number;   
+	c.sortOrder = targetValue;
 	c.name = name;
 	c.calcScore = [targetValue](const DiceValues& d) { return CountValue(d, targetValue) * targetValue; };
 	return c;
@@ -94,6 +96,8 @@ ScoreCategory MakeOddSum()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::OddSum;
+	c.group = enCategoryGroup::SumRule;   
+	c.sortOrder = 20;
 	c.name = L"オッドサム";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 2 != 0) ? s : 0; };
 	return c;
@@ -103,6 +107,8 @@ ScoreCategory MakeEvenSum()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::EvenSum;
+	c.group = enCategoryGroup::SumRule;   
+	c.sortOrder = 21;
 	c.name = L"イーブンサム";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 2 == 0) ? s : 0; };
 	return c;
@@ -112,6 +118,8 @@ ScoreCategory MakeFiveMultiple()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::FiveMultiple;
+	c.group = enCategoryGroup::SumRule;  
+	c.sortOrder = 23;
 	c.name = L"ファイブ倍";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 5 == 0) ? s + 5 : 0; };
 	return c;
@@ -121,6 +129,8 @@ ScoreCategory MakeThreeMultiple()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::ThreeMultiple;
+	c.group = enCategoryGroup::SumRule;
+	c.sortOrder = 22;
 	c.name = L"スリー倍";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 3 == 0) ? s + 3 : 0; };
 	return c;
@@ -130,6 +140,8 @@ ScoreCategory MakeLow()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::Low;
+	c.group = enCategoryGroup::SumRule; 
+	c.sortOrder = 24;
 	c.name = L"ロー";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s <= 10) ? s * 3 : 0; };
 	return c;
@@ -139,6 +151,8 @@ ScoreCategory MakeHigh()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::High;
+	c.group = enCategoryGroup::SumRule;   
+	c.sortOrder = 25;
 	c.name = L"ハイ";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s >= 25) ? s : 0; };
 	return c;
@@ -148,6 +162,8 @@ ScoreCategory MakeRainbow()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::Rainbow;
+	c.group = enCategoryGroup::Shape; 
+	c.sortOrder = 10;
 	c.name = L"レインボー";
 	c.calcScore = [](const DiceValues& d) { return IsRainbow(d) ? 20 : 0; };
 	return c;
@@ -157,8 +173,10 @@ ScoreCategory MakeChance()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::Chance;
+	c.group = enCategoryGroup::Chance;
+	c.sortOrder = 30;
 	c.name = L"チャンス";
-	c.calcScore = [](const DiceValues& d) { return SumAll(d); }; // 常に成立
+	c.calcScore = [](const DiceValues& d) { return SumAll(d); };
 	return c;
 }
 
@@ -166,6 +184,8 @@ ScoreCategory MakeFullHouse()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::FullHouse;
+	c.group = enCategoryGroup::Shape;   
+	c.sortOrder = 11;
 	c.name = L"フルハウス";
 	c.calcScore = [](const DiceValues& d) { return IsFullHouse(d) ? 25 : 0; };
 	return c;
@@ -175,6 +195,8 @@ ScoreCategory MakeThreeCard()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::ThreeCard;
+	c.group = enCategoryGroup::Shape; 
+	c.sortOrder = 12;
 	c.name = L"スリーカード";
 	c.calcScore = [](const DiceValues& d) { return HasNOfAKind(d, 3) ? SumAll(d) : 0; };
 	return c;
@@ -184,6 +206,8 @@ ScoreCategory MakeFourCard()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::FourCard;
+	c.group = enCategoryGroup::Shape;   
+	c.sortOrder = 13;
 	c.name = L"フォーカード";
 	c.calcScore = [](const DiceValues& d) { return HasNOfAKind(d, 4) ? SumAll(d) : 0; };
 	return c;
@@ -193,6 +217,8 @@ ScoreCategory MakeSStraight()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::SStraight;
+	c.group = enCategoryGroup::Shape;   
+	c.sortOrder = 14;
 	c.name = L"S.ストレート";
 	c.calcScore = [](const DiceValues& d) { return IsStraight(d, 4) ? 30 : 0; };
 	return c;
@@ -202,6 +228,8 @@ ScoreCategory MakeLStraight()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::LStraight;
+	c.group = enCategoryGroup::Shape;  
+	c.sortOrder = 15;
 	c.name = L"L.ストレート";
 	c.calcScore = [](const DiceValues& d) { return IsStraight(d, 5) ? 40 : 0; };
 	return c;
@@ -211,6 +239,8 @@ ScoreCategory MakeYacht()
 {
 	ScoreCategory c;
 	c.type = enScoreCategoryType::Yacht;
+	c.group = enCategoryGroup::Yacht;
+	c.sortOrder = 40;
 	c.name = L"ヨット";
 	c.calcScore = [](const DiceValues& d) { return HasNOfAKind(d, 5) ? 60 : 0; };
 	return c;
@@ -245,7 +275,7 @@ std::vector<ScoreCategory> BuildMatchScoreboard()
 {
 	auto pool = BuildFullCategoryPool();
 
-	// Fisher-Yatesシャッフル
+	// Fisher-Yatesシャッフル(ランダム13個を選ぶための処理、既存のまま)
 	for (size_t i = pool.size() - 1; i > 0; i--)
 	{
 		size_t j = rand() % (i + 1);
@@ -253,6 +283,13 @@ std::vector<ScoreCategory> BuildMatchScoreboard()
 	}
 
 	std::vector<ScoreCategory> board(pool.begin(), pool.begin() + 13);
-	board.push_back(MakeYacht()); // ヨットは固定枠として追加
+	board.push_back(MakeYacht());
+
+	// グループ順に並べ替え(見やすさのため)
+	std::sort(board.begin(), board.end(), [](const ScoreCategory& a, const ScoreCategory& b) {
+		if (a.group != b.group) return (int)a.group < (int)b.group;
+		return a.sortOrder < b.sortOrder;   // ← グループが同じなら sortOrder で比較
+		});
+
 	return board;
 }

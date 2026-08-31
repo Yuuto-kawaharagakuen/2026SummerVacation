@@ -67,6 +67,10 @@ bool Game::Start()
 
     PhysicsWorld::GetInstance()->SetGravity(Vector3(0.0f, -300.0f, 0.0f));
 
+	m_whiteRender.Init("Assets/SIRO.DDS",400.0f, 600.0f);
+	m_whiteRender.SetPosition({ -700.0f, 125.0f, 0.0f });
+	m_whiteRender.SetMulColor(Vector4(1.0f, 1.0f, 1.0f, 0.5f)); // 最後の0.5fがアルファ(不透明度)、0が完全透明、1が不透明
+
 	m_trayModelRender.Init("Assets/modelData/Tray.tkm");
 	m_trayModelRender.SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 	
@@ -85,6 +89,10 @@ bool Game::Start()
 	//g_camera3D->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
 
 	m_playerRound.StartNewRound();
+	m_playerBoard = BuildMatchScoreboard();
+	m_playerFilled.assign(m_playerBoard.size(), false);
+	m_playerScores.assign(m_playerBoard.size(), 0);
+	m_scoreBoardView.Init(m_playerBoard);
 	OutputDebugStringW(L"---- プレイヤーのターン開始 ----\n");
 	{
 		const auto& dice = m_playerRound.GetDice();
@@ -106,6 +114,7 @@ bool Game::Start()
 
 void Game::Update()
 {
+	m_whiteRender.Update();
 	m_inputController.Update(m_playerRound);
 	m_trayModelRender.Update();
 
@@ -152,11 +161,15 @@ void Game::Update()
 			OutputDebugStringW(buf);
 		}
 	}
+	m_scoreBoardView.Update(m_playerBoard, m_playerFilled, m_playerScores, m_playerRound.GetDice());
 }
 
 void Game::Render(RenderContext& rc)
 {
+	m_whiteRender.Draw(rc);
+	m_scoreBoardView.Render(rc);
 	m_trayModelRender.Draw(rc);
+
 	for (int i = 0; i < kDiceNum; i++)
 	{
 		m_dices[i].Render(rc);

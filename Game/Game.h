@@ -1,9 +1,11 @@
-#pragma once
+﻿#pragma once
 
 #include "Level3DRender/LevelRender.h"
 #include "DiceRound.h"
 #include "DiceInputController.h"
 #include"Dice.h"
+#include "ScoreCategory.h" 
+#include "ScoreBoardView.h" 
 class Player;
 
 class Game : public IGameObject
@@ -26,8 +28,14 @@ private:
 	DiceInputController m_inputController;
 	Vector3 m_pos;
 
+	SpriteRender m_whiteRender;//白色のスコアボード
 	MeshCollider m_trayCollider;
 	RigidBody m_trayRigidBody;
 	bool m_isDiceRolling = false;
+
+	std::vector<ScoreCategory> m_playerBoard;   // 13ランダム+ヨット固定の役一覧
+	std::vector<bool> m_playerFilled;           // 埋まったかどうか
+	std::vector<int> m_playerScores;            // 確定した得点(未確定は0でOK)
+	ScoreBoardView m_scoreBoardView;            // 見た目の表示担当
 };
 

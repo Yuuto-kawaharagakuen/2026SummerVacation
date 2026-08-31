@@ -17,6 +17,7 @@
     <ClCompile Include="DiceRound.cpp" />
     <ClCompile Include="DiceInputController.cpp" />
     <ClCompile Include="Dice.cpp" />
+    <ClCompile Include="ScoreBoardView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -29,5 +30,6 @@
     <ClInclude Include="DiceRound.h" />
     <ClInclude Include="DiceInputController.h" />
     <ClInclude Include="Dice.h" />
+    <ClInclude Include="ScoreBoardView.h" />
   </ItemGroup>
 </Project>

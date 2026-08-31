@@ -229,6 +229,7 @@
     <ClCompile Include="DiceRound.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ScoreBoardView.cpp" />
     <ClCompile Include="ScoreCategory.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -243,6 +244,7 @@
     <ClInclude Include="DiceInputController.h" />
     <ClInclude Include="DiceRound.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="ScoreBoardView.h" />
     <ClInclude Include="ScoreCategory.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="system\system.h" />

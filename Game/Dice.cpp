@@ -85,6 +85,7 @@ void Dice::Render(RenderContext& rc)
 
 bool Dice::IsSettled() const
 {
+
 	if (m_settleCheckDelay > 0) return false; 
 	Vector3 vel = m_rigidBody.GetLinearVelocity();
 	Vector3 angVel = m_rigidBody.GetAngularVelocity();

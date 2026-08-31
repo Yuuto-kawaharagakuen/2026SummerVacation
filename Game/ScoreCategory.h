@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <array>
 #include <functional>
 #include <string>
@@ -14,16 +14,25 @@ enum class enScoreCategoryType
 	Num
 };
 
-using DiceValues = std::array<int, 5>; // 5個のダイスの出目(1~6)
+enum class enCategoryGroup   
+{
+	Number,   // 1の目~6の目
+	SumRule,  // オッドサム、イーブンサム、ファイブ倍、スリー倍、ロー、ハイ
+	Shape,    // レインボー、フルハウス、スリーカード、フォーカード、S/Lストレート
+	Chance,   // チャンス
+	Yacht,    // ヨット
+};
+
+using DiceValues = std::array<int, 5>;
 
 struct ScoreCategory
 {
 	enScoreCategoryType type;
+	enCategoryGroup group;
+	int sortOrder;
 	std::wstring name;
-	std::function<int(const DiceValues&)> calcScore; // 条件を満たさなければ0を返す
+	std::function<int(const DiceValues&)> calcScore;
 };
 
-// 19種類の役プールを生成(ヨットは含まない)
 std::vector<ScoreCategory> BuildFullCategoryPool();
-// 試合開始時に13個をランダム抽選し、ヨットを固定追加したスコアボードを作る
 std::vector<ScoreCategory> BuildMatchScoreboard();

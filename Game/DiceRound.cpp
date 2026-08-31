@@ -5,7 +5,8 @@ void DiceRound::StartNewRound()
 {	
 		m_keepMask = {};
 		m_rollsRemaining = kMaxRolls;
-		m_state = enRollState::Idle; // Rolling にせず、Idle のまま待機
+		m_state = enRollState::Idle;
+		RollDice();
 }
 
 void DiceRound::RollDice()
