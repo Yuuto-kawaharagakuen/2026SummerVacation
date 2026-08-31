@@ -3,7 +3,7 @@
 #include "ScoreCategory.h"
 #include "DiceRound.h"
 #include "CpuPlayer.h"
-
+#include "Dice.h"
 namespace
 {
 	void PrintDice(const wchar_t* label, const DiceValues& dice)
@@ -81,7 +81,7 @@ bool Game::Start()
 	trayInfo.mass = 0.0f;
 	m_trayRigidBody.Init(trayInfo);
 
-	g_camera3D->SetPosition(Vector3(-1.0f, 350.0f, 0.0f));
+	g_camera3D->SetPosition(Vector3(-100.0f, 350.0f, 0.0f));
 	//g_camera3D->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
 
 	m_playerRound.StartNewRound();
@@ -107,16 +107,49 @@ bool Game::Start()
 void Game::Update()
 {
 	m_inputController.Update(m_playerRound);
-	m_trayModelRender.Update();   
+	m_trayModelRender.Update();
+
+	// プレイヤーが「振る」操作をして Rolling 状態になったら、物理ダイスを実際に転がす
+	if (m_playerRound.GetRollState() == enRollState::Rolling && !m_isDiceRolling)
+	{
+		m_isDiceRolling = true;
+		const auto& keepMask = m_playerRound.GetKeepMask();
+		for (int i = 0; i < kDiceNum; i++)
+		{
+			if (!keepMask[i]) m_dices[i].Roll(); // キープしてないダイスだけ振る
+		}
+	}
+
 	for (int i = 0; i < kDiceNum; i++)
 	{
 		m_dices[i].Update();
-		if (!m_hasPrintedResult[i] && m_dices[i].IsSettled())
+	}
+
+	// 振ってる最中なら、5個全部静止するまで待つ
+	if (m_isDiceRolling)
+	{
+		bool allSettled = true;
+		for (int i = 0; i < kDiceNum; i++)
 		{
-			wchar_t buf[64];
-			swprintf_s(buf, L"ダイス%d 出目: %d\n", i + 1, m_dices[i].GetFaceValue());
+			if (!m_dices[i].IsSettled()) { allSettled = false; break; }
+		}
+		if (allSettled)
+		{
+			DiceValues results;
+			for (int i = 0; i < kDiceNum; i++)
+			{
+				results[i] = m_dices[i].GetFaceValue();
+
+			}
+			m_playerRound.CompleteRoll(results);
+			m_isDiceRolling = false;
+
+			// 確認用: DiceRoundに反映された出目をログ出力
+			const auto& finalDice = m_playerRound.GetDice();
+			wchar_t buf[128];
+			swprintf_s(buf, L"確定した出目:[%d,%d,%d,%d,%d]\n",
+				finalDice[0], finalDice[1], finalDice[2], finalDice[3], finalDice[4]);
 			OutputDebugStringW(buf);
-			m_hasPrintedResult[i] = true;
 		}
 	}
 }

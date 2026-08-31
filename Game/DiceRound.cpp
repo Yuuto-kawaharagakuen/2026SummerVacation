@@ -1,27 +1,25 @@
 #include "stdafx.h"
 #include "DiceRound.h"
 
-namespace
-{
-	int RollOne() { return rand() % 6 + 1; }
-}
-
 void DiceRound::StartNewRound()
 {
 	m_keepMask = {};
 	m_rollsRemaining = kMaxRolls;
-	RollDice(); // 手番開始時に自動で1投目
+	m_state = enRollState::Idle;
+	RollDice(); // 手番開始時に自動で1投目を振り始める
 }
 
 void DiceRound::RollDice()
 {
 	if (!CanRoll()) return;
-
-	for (int i = 0; i < 5; i++)
-	{
-		if (!m_keepMask[i]) m_dice[i] = RollOne();
-	}
 	m_rollsRemaining--;
+	m_state = enRollState::Rolling;
+}
+
+void DiceRound::CompleteRoll(const DiceValues& results)
+{
+	m_dice = results;
+	m_state = enRollState::Settled;
 }
 
 void DiceRound::ToggleKeep(int diceIndex)

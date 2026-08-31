@@ -9,7 +9,7 @@ namespace
 void Dice::Init(const Vector3& startPos)
 {
 	m_modelRender.Init("Assets/modelData/Dice.tkm"); 
-	m_collider.Create(Vector3(kDiceHalfSize * 4.0f, kDiceHalfSize * 4.0f, kDiceHalfSize * 4.0f));
+	m_collider.Create(Vector3(kDiceHalfSize * 6.0f, kDiceHalfSize * 6.0f, kDiceHalfSize * 6.0f));
 
 
 	RigidBodyInitData rbInfo;
@@ -37,7 +37,7 @@ void Dice::Roll()
 	Quaternion startRot = rotX * rotY * rotZ; 
 
 
-	m_rigidBody.SetPositionAndRotation(dropPos, Quaternion::Identity);
+	m_rigidBody.SetPositionAndRotation(dropPos, startRot);  
 	m_rigidBody.SetLinearVelocity(Vector3::Zero);
 
 	Vector3 angularVel(
@@ -58,6 +58,25 @@ void Dice::Update()
 	 m_modelRender.SetScale(Vector3(0.5f, 0.5f, 0.5f)); 
 	 m_modelRender.Update();
 }
+Vector3 RotateVectorByQuaternion(const Quaternion& q, const Vector3& v)
+{
+	// クォータニオンでベクトルを回転(q * v * qの共役)
+	float qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+	float vx = v.x, vy = v.y, vz = v.z;
+
+	// q * v (vをクォータニオン(vx,vy,vz,0)とみなして掛ける)
+	float ix = qw * vx + qy * vz - qz * vy;
+	float iy = qw * vy + qz * vx - qx * vz;
+	float iz = qw * vz + qx * vy - qy * vx;
+	float iw = -qx * vx - qy * vy - qz * vz;
+
+	// 上の結果 * qの共役(-qx, -qy, -qz, qw)
+	Vector3 result;
+	result.x = ix * qw + iw * (-qx) + iy * (-qz) - iz * (-qy);
+	result.y = iy * qw + iw * (-qy) + iz * (-qx) - ix * (-qz);
+	result.z = iz * qw + iw * (-qz) + ix * (-qy) - iy * (-qx);
+	return result;
+}
 
 void Dice::Render(RenderContext& rc)
 {
@@ -74,24 +93,21 @@ bool Dice::IsSettled() const
 
 int Dice::GetFaceValue() const
 {
-	// ダイスのローカル座標系で、どの軸が何の目に対応するかを定義
-	// (1-6, 2-5, 3-4が対になるのが一般的。モデル完成後に実際の面と合わせて調整)
 	struct FaceDir { Vector3 localDir; int value; };
 	static const FaceDir faces[6] = {
-		{ Vector3(0,  1, 0), 6 },
-		{ Vector3(0, -1, 0), 1 },
-		{ Vector3(1,  0, 0), 5 },
-		{ Vector3(-1, 0, 0), 2 },
-		{ Vector3(0,  0, 1), 4 },
-		{ Vector3(0,  0,-1), 3 },
+		{ Vector3(1,  0, 0), 3 },
+		{ Vector3(-1, 0, 0), 4 },
+		{ Vector3(0,  1, 0), 1 },
+		{ Vector3(0, -1, 0), 6 },
+		{ Vector3(0,  0, 1), 2 },
+		{ Vector3(0,  0,-1), 5 },
 	};
 
 	int bestValue = 1;
 	float bestDot = -999.0f;
 	for (auto& f : faces)
 	{
-		Vector3 worldDir; 
-		DirectX::XMStoreFloat3(&worldDir.vec, m_rotation* f.localDir);
+		Vector3 worldDir = RotateVectorByQuaternion(m_rotation, f.localDir);
 		if (worldDir.y > bestDot)
 		{
 			bestDot = worldDir.y;

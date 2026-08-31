@@ -28,5 +28,6 @@ private:
 
 	MeshCollider m_trayCollider;
 	RigidBody m_trayRigidBody;
+	bool m_isDiceRolling = false;
 };
 
