@@ -4,6 +4,7 @@
 #include "DiceRound.h"
 #include "CpuPlayer.h"
 #include "Dice.h"
+#include "C:\my\01_project\02_Game\2026SummerVacation\k2EngineLow\ExEngine\DirectXTK\Inc\Mouse.h"
 namespace
 {
 	void PrintDice(const wchar_t* label, const DiceValues& dice)
@@ -162,6 +163,17 @@ void Game::Update()
 		}
 	}
 	m_scoreBoardView.Update(m_playerBoard, m_playerFilled, m_playerScores, m_playerRound.GetDice());
+
+
+	auto mouseState = DirectX::Mouse::Get().GetState();
+	static int frameCount2 = 0;
+	frameCount2++;
+	if (frameCount2 % 30 == 0)
+	{
+		wchar_t buf[128];
+		swprintf_s(buf, L"マウス座標:(%d, %d) 左クリック:%d\n", mouseState.x, mouseState.y, mouseState.leftButton);
+		OutputDebugStringW(buf);
+	}
 }
 
 void Game::Render(RenderContext& rc)

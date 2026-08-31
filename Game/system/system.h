@@ -1,5 +1,4 @@
 #pragma once
-
 class GraphicsEngine;
 extern HWND			g_hWnd ;				//ウィンドウハンドル。
 

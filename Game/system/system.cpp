@@ -3,7 +3,9 @@
 #include "graphics/GraphicsEngine.h"
 #include "graphics/RenderingEngine.h"
 #include "sound/SoundEngine.h"
+#include "C:\my\01_project\02_Game\2026SummerVacation\k2EngineLow\ExEngine\DirectXTK\Inc\Mouse.h"
 
+DirectX::Mouse g_mouseInstance;
 HWND			g_hWnd = NULL;				//ウィンドウハンドル。
 
 ///////////////////////////////////////////////////////////////////
@@ -14,13 +16,14 @@ HWND			g_hWnd = NULL;				//ウィンドウハンドル。
 ///////////////////////////////////////////////////////////////////
 LRESULT CALLBACK MsgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	//送られてきたメッセージで処理を分岐させる。
+	// マウスのメッセージをDirectXTKのMouseクラスに渡す
+	DirectX::Mouse::ProcessMessage(msg, wParam, lParam);
+
 	switch (msg)
 	{
 	case WM_DESTROY:
-		//スエンジンの破棄。
 		PostQuitMessage(0);
-		break;	
+		break;
 	default:
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
@@ -71,7 +74,7 @@ void InitWindow(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, 
 	);
 
 	ShowWindow(g_hWnd, nCmdShow);
-
+	g_mouseInstance.SetWindow(g_hWnd);
 }
 
 
