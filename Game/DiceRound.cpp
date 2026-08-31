@@ -2,11 +2,10 @@
 #include "DiceRound.h"
 
 void DiceRound::StartNewRound()
-{
-	m_keepMask = {};
-	m_rollsRemaining = kMaxRolls;
-	m_state = enRollState::Idle;
-	RollDice(); // 手番開始時に自動で1投目を振り始める
+{	
+		m_keepMask = {};
+		m_rollsRemaining = kMaxRolls;
+		m_state = enRollState::Idle; // Rolling にせず、Idle のまま待機
 }
 
 void DiceRound::RollDice()
