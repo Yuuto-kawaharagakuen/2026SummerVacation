@@ -48,7 +48,7 @@ namespace
 		return has3 && has2;
 	}
 
-	// length個以上連続した目があるか(4連番/5連番の判定に共用)
+	// length個以上連続した目があるか
 	bool IsStraight(const DiceValues& d, int length)
 	{
 		std::array<bool, 7> present{};
@@ -288,7 +288,7 @@ std::vector<ScoreCategory> BuildMatchScoreboard()
 	// グループ順に並べ替え(見やすさのため)
 	std::sort(board.begin(), board.end(), [](const ScoreCategory& a, const ScoreCategory& b) {
 		if (a.group != b.group) return (int)a.group < (int)b.group;
-		return a.sortOrder < b.sortOrder;   // ← グループが同じなら sortOrder で比較
+		return a.sortOrder < b.sortOrder;   // グループが同じなら sortOrder で比較
 		});
 
 	return board;

@@ -20,6 +20,7 @@ void Dice::Init(const Vector3& startPos)
 	rbInfo.restitution = 0.6f;
 	m_rigidBody.Init(rbInfo);
 
+	m_rigidBody.GetBody()->setUserPointer(this);
 	m_rigidBody.SetFriction(0.6f);
 	m_rigidBody.SetCcd(kDiceHalfSize, kDiceHalfSize * 0.9f);
 }
@@ -57,6 +58,39 @@ void Dice::Update()
 	 m_modelRender.SetRotation(m_rotation);
 	 m_modelRender.SetScale(Vector3(0.5f, 0.5f, 0.5f)); 
 	 m_modelRender.Update();
+}
+
+void Dice::SetKinematic(bool isKinematic)
+{
+	btRigidBody* body = m_rigidBody.GetBody();
+	if (isKinematic)
+	{
+		// キネマティック化：物理の影響（重力・衝突応答）を受けなくなる
+		body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+		body->setActivationState(DISABLE_DEACTIVATION);
+	}
+	else
+	{
+		// 通常の物理挙動に戻す
+		body->setCollisionFlags(body->getCollisionFlags() & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+		body->setActivationState(ACTIVE_TAG);
+		body->activate(true);
+	}
+}
+
+void Dice::SnapToHeldSlot(const Vector3& slotPos)
+{
+	Vector3 pos;
+	Quaternion currentRot;
+	m_rigidBody.GetPositionAndRotation(pos, currentRot); // 現在の向きだけ取得
+
+	SetKinematic(true);
+	m_rigidBody.SetPositionAndRotation(slotPos, currentRot); // 向きは変えず位置だけ更新
+}
+
+void Dice::ReturnToPhysics()
+{
+	SetKinematic(false);
 }
 Vector3 RotateVectorByQuaternion(const Quaternion& q, const Vector3& v)
 {
