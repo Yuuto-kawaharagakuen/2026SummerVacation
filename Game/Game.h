@@ -27,12 +27,13 @@ private:
 	DiceRound m_playerRound;
 	DiceInputController m_inputController;
 	Vector3 m_pos;
-
+	Vector3 GetHeldSlotPosition(int diceIndex) const;
+	Vector3 CalcWorldPosFromScreenAndHeight(float screenX, float screenY, float worldY) const;
 	SpriteRender m_whiteRender;//白色のスコアボード
 	MeshCollider m_trayCollider;
 	RigidBody m_trayRigidBody;
 	bool m_isDiceRolling = false;
-
+	Vector3 m_heldSlotPositions[kDiceNum];
 	std::vector<ScoreCategory> m_playerBoard;   // 13ランダム+ヨット固定の役一覧
 	std::vector<bool> m_playerFilled;           // 埋まったかどうか
 	std::vector<int> m_playerScores;            // 確定した得点(未確定は0でOK)

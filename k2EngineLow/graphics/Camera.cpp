@@ -69,4 +69,34 @@ namespace nsK2EngineLow {
 		m_position = m_target + toPos;
 		m_isDirty = true;
 	}
+
+	//’Ç‰Á‚µ‚½‚â‚Â
+	void Camera::CalcRayFromScreenPos(Vector3& rayStart, Vector3& rayDir, int mouseX, int mouseY)
+	{
+		float w = (float)g_graphicsEngine->GetFrameBufferWidth();
+		float h = (float)g_graphicsEngine->GetFrameBufferHeight();
+
+		float ndcX = (mouseX / w) * 2.0f - 1.0f;
+		float ndcY = 1.0f - (mouseY / h) * 2.0f;
+
+		const Matrix& vpInv = GetViewProjectionMatrixInv();
+
+		Vector4 nearPoint(ndcX, ndcY, 0.0f, 1.0f);
+		Vector4 farPoint(ndcX, ndcY, 1.0f, 1.0f);
+
+		vpInv.Apply(nearPoint);
+		vpInv.Apply(farPoint);
+
+		nearPoint.x /= nearPoint.w;
+		nearPoint.y /= nearPoint.w;
+		nearPoint.z /= nearPoint.w;
+		farPoint.x /= farPoint.w;
+		farPoint.y /= farPoint.w;
+		farPoint.z /= farPoint.w;
+
+		rayStart.Set(nearPoint.x, nearPoint.y, nearPoint.z);
+		Vector3 rayEnd(farPoint.x, farPoint.y, farPoint.z);
+		rayDir = rayEnd - rayStart;
+		rayDir.Normalize();
+	}
 }

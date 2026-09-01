@@ -170,6 +170,20 @@ namespace nsK2EngineLow {
 			m_rigidBody->setCcdMotionThreshold(motionThreshold);
 			m_rigidBody->setCcdSweptSphereRadius(sweptSphereRadius);
 		}
+
+		void SetKinematicTransform(const Vector3& pos, const Quaternion& rot)
+		{
+			btTransform trans;
+			btVector3 btPos;
+			btPos.setValue(pos.x, pos.y, pos.z);
+			trans.setOrigin(btPos);
+			btQuaternion btRot;
+			btRot.setValue(rot.x, rot.y, rot.z, rot.w);
+			trans.setRotation(btRot);
+
+			m_myMotionState->setWorldTransform(trans); 
+			m_rigidBody->setWorldTransform(trans);     
+		}
 	private:
 		std::unique_ptr<btRigidBody>			m_rigidBody;		//剛体。
 		std::unique_ptr<btDefaultMotionState>	m_myMotionState;	//モーションステート。

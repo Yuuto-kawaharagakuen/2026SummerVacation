@@ -4,7 +4,7 @@
 #include "DiceRound.h"
 #include "CpuPlayer.h"
 #include "Dice.h"
-#include "C:\my\01_project\02_Game\2026SummerVacation\k2EngineLow\ExEngine\DirectXTK\Inc\Mouse.h"
+
 namespace
 {
 	void PrintDice(const wchar_t* label, const DiceValues& dice)
@@ -66,15 +66,15 @@ bool Game::Start()
 
 	//PhysicsWorld::GetInstance()->EnableDrawDebugWireFrame();
 
-    PhysicsWorld::GetInstance()->SetGravity(Vector3(0.0f, -300.0f, 0.0f));
+	PhysicsWorld::GetInstance()->SetGravity(Vector3(0.0f, -300.0f, 0.0f));
 
-	m_whiteRender.Init("Assets/SIRO.DDS",400.0f, 600.0f);
+	m_whiteRender.Init("Assets/SIRO.DDS", 400.0f, 600.0f);
 	m_whiteRender.SetPosition({ -700.0f, 125.0f, 0.0f });
 	m_whiteRender.SetMulColor(Vector4(1.0f, 1.0f, 1.0f, 0.5f)); // 最後の0.5fがアルファ(不透明度)、0が完全透明、1が不透明
 
 	m_trayModelRender.Init("Assets/modelData/Tray.tkm");
 	m_trayModelRender.SetPosition(Vector3(0.0f, 0.0f, 0.0f));
-	
+
 	Matrix upAxisFix;
 	upAxisFix.MakeRotationX(Math::DegToRad(-90.0f));
 	m_trayCollider.CreateFromModel(m_trayModelRender.GetModel(), upAxisFix);
@@ -86,8 +86,15 @@ bool Game::Start()
 	trayInfo.mass = 0.0f;
 	m_trayRigidBody.Init(trayInfo);
 
-	g_camera3D->SetPosition(Vector3(-100.0f, 350.0f, 0.0f));
-	//g_camera3D->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
+	g_camera3D->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
+	g_camera3D->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
+	g_camera3D->SetUp(Vector3(0.0f, 0.0f, 1.0f));
+
+	m_heldSlotPositions[0] = Vector3(220.0f, 150.0f, -150.0f);
+	m_heldSlotPositions[1] = Vector3(220.0f, 150.0f, -75.0f);
+	m_heldSlotPositions[2] = Vector3(220.0f, 150.0f, 0.0f);
+	m_heldSlotPositions[3] = Vector3(220.0f, 150.0f, 75.0f);
+	m_heldSlotPositions[4] = Vector3(220.0f, 150.0f, 150.0f);
 
 	m_playerRound.StartNewRound();
 	m_playerBoard = BuildMatchScoreboard();
@@ -105,7 +112,7 @@ bool Game::Start()
 	for (int i = 0; i < kDiceNum; i++)
 	{
 		// 重ならないように、少しずつXZをずらして配置
-		float offsetX = (i - 2) * 45.0f; 
+		float offsetX = (i - 2) * 45.0f;
 		float offsetZ = ((i % 2 == 0) ? 1.0f : -1.0f) * 15.0f;
 		m_dices[i].Init(Vector3(offsetX, 100.0f, 0.0f));
 		m_dices[i].Roll();
@@ -116,7 +123,26 @@ bool Game::Start()
 void Game::Update()
 {
 	m_whiteRender.Update();
+
+	// ★キーボード入力(1〜5キー)でToggleKeepが呼ばれる。呼び出し前後でkeepMaskを比較する。
+	auto prevKeepMask = m_playerRound.GetKeepMask();
+
 	m_inputController.Update(m_playerRound);
+
+	auto currentKeepMask = m_playerRound.GetKeepMask();
+	for (int i = 0; i < kDiceNum; i++)
+	{
+		if (currentKeepMask[i] && !prevKeepMask[i])
+		{
+			Vector3 slotPos = GetHeldSlotPosition(i);
+			m_dices[i].SnapToHeldSlot(slotPos);
+		}
+		else if (!currentKeepMask[i] && prevKeepMask[i])
+		{
+			m_dices[i].ReturnToPhysics();
+		}
+	}
+
 	m_trayModelRender.Update();
 
 	// プレイヤーが「振る」操作をして Rolling 状態になったら、物理ダイスを実際に転がす
@@ -134,7 +160,6 @@ void Game::Update()
 	{
 		m_dices[i].Update();
 	}
-
 	// 振ってる最中なら、5個全部静止するまで待つ
 	if (m_isDiceRolling)
 	{
@@ -149,7 +174,6 @@ void Game::Update()
 			for (int i = 0; i < kDiceNum; i++)
 			{
 				results[i] = m_dices[i].GetFaceValue();
-
 			}
 			m_playerRound.CompleteRoll(results);
 			m_isDiceRolling = false;
@@ -163,17 +187,11 @@ void Game::Update()
 		}
 	}
 	m_scoreBoardView.Update(m_playerBoard, m_playerFilled, m_playerScores, m_playerRound.GetDice());
+}
 
-
-	auto mouseState = DirectX::Mouse::Get().GetState();
-	static int frameCount2 = 0;
-	frameCount2++;
-	if (frameCount2 % 30 == 0)
-	{
-		wchar_t buf[128];
-		swprintf_s(buf, L"マウス座標:(%d, %d) 左クリック:%d\n", mouseState.x, mouseState.y, mouseState.leftButton);
-		OutputDebugStringW(buf);
-	}
+Vector3 Game::GetHeldSlotPosition(int diceIndex) const
+{
+	return m_heldSlotPositions[diceIndex];
 }
 
 void Game::Render(RenderContext& rc)

@@ -76,7 +76,7 @@ namespace nsK2EngineLow {
 		m_dynamicWorld->rayTest(start, end, cb);
 		if (cb.isHit) {
 			hitPos = cb.hitPos;
-			if (outHitUserPointer) *outHitUserPointer = cb.hitUserPointer; // Åöí«â¡
+			if (outHitUserPointer) *outHitUserPointer = cb.hitUserPointer; 
 		}
 		return cb.isHit;
 	}
