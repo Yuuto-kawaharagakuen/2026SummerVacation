@@ -10,12 +10,12 @@ namespace
 	// GetFaceValue()と同じ対応表(出目を保ったまま面の法線を再利用するため)
 	struct FaceDir { Vector3 localDir; int value; };
 	const FaceDir kFaceDirs[6] = {
-		{ Vector3(1,  0, 0), 3 },
-		{ Vector3(-1, 0, 0), 4 },
-		{ Vector3(0,  1, 0), 1 },
-		{ Vector3(0, -1, 0), 6 },
-		{ Vector3(0,  0, 1), 2 },
-		{ Vector3(0,  0,-1), 5 },
+		{ Vector3(1,  0, 0), 4 },
+		{ Vector3(-1, 0, 0), 3 },
+		{ Vector3(0,  1, 0), 5 },
+		{ Vector3(0, -1, 0), 2 },
+		{ Vector3(0,  0, 1), 1 },
+		{ Vector3(0,  0,-1), 6 },
 	};
 }
 
@@ -133,12 +133,12 @@ void Dice::SnapToHeldSlot(const Vector3& slotPos)
 	float bestDot = -999.0f;
 	struct FaceDir { Vector3 localDir; int value; };
 	static const FaceDir faces[6] = {
-		{ Vector3(1,  0, 0), 3 },
-		{ Vector3(-1, 0, 0), 4 },
-		{ Vector3(0,  1, 0), 1 },
-		{ Vector3(0, -1, 0), 6 },
-		{ Vector3(0,  0, 1), 2 },
-		{ Vector3(0,  0,-1), 5 },
+		{ Vector3(1,  0, 0), 4 },
+		{ Vector3(-1, 0, 0), 3 },
+		{ Vector3(0,  1, 0), 5 },
+		{ Vector3(0, -1, 0), 2 },
+		{ Vector3(0,  0, 1), 1 },
+		{ Vector3(0,  0,-1), 6 },
 	};
 	for (auto& f : faces)
 	{
@@ -152,12 +152,12 @@ void Dice::SnapToHeldSlot(const Vector3& slotPos)
 
 	switch (bestValue)
 	{
-	case 1: m_heldDisplayRot = Quaternion::Identity; break;
-	case 6: m_heldDisplayRot.SetRotationDeg(Vector3::AxisX, 180.0f); break;
-	case 3: m_heldDisplayRot.SetRotationDeg(Vector3::AxisZ, 90.0f); break;
-	case 4: m_heldDisplayRot.SetRotationDeg(Vector3::AxisZ, -90.0f); break;
-	case 2: m_heldDisplayRot.SetRotationDeg(Vector3::AxisX, -90.0f); break;
-	case 5: m_heldDisplayRot.SetRotationDeg(Vector3::AxisX, 90.0f); break;
+	case 5: m_heldDisplayRot = Quaternion::Identity; break;
+	case 2: m_heldDisplayRot.SetRotationDeg(Vector3::AxisX, 180.0f); break;
+	case 4: m_heldDisplayRot.SetRotationDeg(Vector3::AxisZ, 90.0f); break;
+	case 3: m_heldDisplayRot.SetRotationDeg(Vector3::AxisZ, -90.0f); break;
+	case 1: m_heldDisplayRot.SetRotationDeg(Vector3::AxisX, -90.0f); break;
+	case 6: m_heldDisplayRot.SetRotationDeg(Vector3::AxisX, 90.0f); break;
 	default: m_heldDisplayRot = Quaternion::Identity; break;
 	}
 }
@@ -195,12 +195,12 @@ int Dice::GetFaceValue() const
 {
 	struct FaceDir { Vector3 localDir; int value; };
 	static const FaceDir faces[6] = {
-		{ Vector3(1,  0, 0), 3 },
-		{ Vector3(-1, 0, 0), 4 },
-		{ Vector3(0,  1, 0), 1 },
-		{ Vector3(0, -1, 0), 6 },
-		{ Vector3(0,  0, 1), 2 },
-		{ Vector3(0,  0,-1), 5 },
+		{ Vector3(1,  0, 0), 4 },
+		{ Vector3(-1, 0, 0), 3 },
+		{ Vector3(0,  1, 0), 5 },
+		{ Vector3(0, -1, 0), 2 },
+		{ Vector3(0,  0, 1), 1 },
+		{ Vector3(0,  0,-1), 6 },
 	};
 
 	int bestValue = 1;

@@ -124,7 +124,7 @@ void Game::Update()
 {
 	m_whiteRender.Update();
 
-	// ★キーボード入力(1〜5キー)でToggleKeepが呼ばれる。呼び出し前後でkeepMaskを比較する。
+	// キーボード入力(1〜5キー)でToggleKeepが呼ばれる。呼び出し前後でkeepMaskを比較する。
 	auto prevKeepMask = m_playerRound.GetKeepMask();
 
 	m_inputController.Update(m_playerRound);
