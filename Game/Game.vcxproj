@@ -231,6 +231,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ScoreBoardView.cpp" />
     <ClCompile Include="ScoreCategory.cpp" />
+    <ClCompile Include="ScoreSelectController.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -246,6 +247,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="ScoreBoardView.h" />
     <ClInclude Include="ScoreCategory.h" />
+    <ClInclude Include="ScoreSelectController.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="system\system.h" />
   </ItemGroup>

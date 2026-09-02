@@ -169,6 +169,9 @@ void Dice::ReturnToPhysics()
 	m_rigidBody.SetLinearVelocity(Vector3::Zero);
 	m_rigidBody.SetAngularVelocity(Vector3::Zero);
 	m_isHeld = false; 
+
+	m_position = m_returnPos;
+	m_rotation = m_returnRot;
 }
 void Dice::Render(RenderContext& rc)
 {

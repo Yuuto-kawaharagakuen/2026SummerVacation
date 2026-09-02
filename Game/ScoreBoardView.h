@@ -9,7 +9,8 @@ public:
 
 	void Init(const std::vector<ScoreCategory>& board);
 	void Update(const std::vector<ScoreCategory>& board, const std::vector<bool>& filled,
-		const std::vector<int>& finalScores, const DiceValues& currentDice);
+		const std::vector<int>& finalScores, const DiceValues& currentDice,
+		int selectedIndex);
 	void Render(RenderContext& rc);
 
 private:

@@ -4,7 +4,7 @@
 #include "DiceRound.h"
 #include "CpuPlayer.h"
 #include "Dice.h"
-
+#include "ScoreSelectController.h"
 namespace
 {
 	void PrintDice(const wchar_t* label, const DiceValues& dice)
@@ -90,11 +90,11 @@ bool Game::Start()
 	g_camera3D->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
 	g_camera3D->SetUp(Vector3(0.0f, 0.0f, 1.0f));
 
-	m_heldSlotPositions[0] = Vector3(220.0f, 150.0f, -150.0f);
-	m_heldSlotPositions[1] = Vector3(220.0f, 150.0f, -75.0f);
+	m_heldSlotPositions[0] = Vector3(220.0f, 150.0f, 150.0f);
+	m_heldSlotPositions[1] = Vector3(220.0f, 150.0f, 75.0f);
 	m_heldSlotPositions[2] = Vector3(220.0f, 150.0f, 0.0f);
-	m_heldSlotPositions[3] = Vector3(220.0f, 150.0f, 75.0f);
-	m_heldSlotPositions[4] = Vector3(220.0f, 150.0f, 150.0f);
+	m_heldSlotPositions[3] = Vector3(220.0f, 150.0f, -75.0f);
+	m_heldSlotPositions[4] = Vector3(220.0f, 150.0f, -150.0f);
 
 	m_playerRound.StartNewRound();
 	m_playerBoard = BuildMatchScoreboard();
@@ -186,7 +186,39 @@ void Game::Update()
 			OutputDebugStringW(buf);
 		}
 	}
-	m_scoreBoardView.Update(m_playerBoard, m_playerFilled, m_playerScores, m_playerRound.GetDice());
+	if (!m_isDiceRolling && m_playerRound.GetRollState() == enRollState::Settled)
+	{
+		int confirmedIndex = -1;
+		bool confirmed = m_scoreSelectController.Update(m_playerBoard, m_playerFilled, confirmedIndex);
+		if (confirmed)
+		{
+			int score = m_playerBoard[confirmedIndex].calcScore(m_playerRound.GetDice());
+			m_playerScores[confirmedIndex] = score;
+			m_playerFilled[confirmedIndex] = true;
+
+			wchar_t buf[128];
+			swprintf_s(buf, L"役確定: %ls / 得点: %d\n", m_playerBoard[confirmedIndex].name.c_str(), score);
+			OutputDebugStringW(buf);
+
+			const auto& keepMaskBeforeReset = m_playerRound.GetKeepMask();
+			for (int i = 0; i < kDiceNum; i++)
+			{
+				if (keepMaskBeforeReset[i])
+				{
+					m_dices[i].ReturnToPhysics();
+				}
+			}
+			// 次のラウンドへ
+			m_playerRound.StartNewRound();
+			for (int i = 0; i < kDiceNum; i++)
+			{
+				m_dices[i].Roll(); // 新しいラウンドの初回ロールを実際に転がす
+			}
+			m_isDiceRolling = true;
+		}
+	}
+	m_scoreBoardView.Update(m_playerBoard, m_playerFilled, m_playerScores, m_playerRound.GetDice(),
+		m_scoreSelectController.GetSelectedIndex());
 }
 
 Vector3 Game::GetHeldSlotPosition(int diceIndex) const

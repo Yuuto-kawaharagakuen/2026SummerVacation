@@ -6,6 +6,7 @@
 #include"Dice.h"
 #include "ScoreCategory.h" 
 #include "ScoreBoardView.h" 
+#include "ScoreSelectController.h"
 class Player;
 
 class Game : public IGameObject
@@ -38,5 +39,6 @@ private:
 	std::vector<bool> m_playerFilled;           // 埋まったかどうか
 	std::vector<int> m_playerScores;            // 確定した得点(未確定は0でOK)
 	ScoreBoardView m_scoreBoardView;            // 見た目の表示担当
+	ScoreSelectController m_scoreSelectController;
 };
 
