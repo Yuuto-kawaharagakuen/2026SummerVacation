@@ -40,5 +40,7 @@ private:
 	std::vector<int> m_playerScores;            // 確定した得点(未確定は0でOK)
 	ScoreBoardView m_scoreBoardView;            // 見た目の表示担当
 	ScoreSelectController m_scoreSelectController;
+
+	SkyCube* skyCube = nullptr;
 };
 

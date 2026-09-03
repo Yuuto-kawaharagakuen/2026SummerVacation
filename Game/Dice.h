@@ -17,7 +17,7 @@ public:
 	Vector3 GetVelocity() const { return m_rigidBody.GetLinearVelocity(); }
 	Vector3 GetAngularVelocity() const { return m_rigidBody.GetAngularVelocity(); }
 	void StopCompletely();
-
+	void DebugSetRotationForCalibration(const Quaternion& rot);
 private:
 	bool m_isHeld = false;        
 	Quaternion m_heldDisplayRot;
