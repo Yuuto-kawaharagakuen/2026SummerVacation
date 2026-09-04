@@ -98,7 +98,7 @@ ScoreCategory MakeOddSum()
 	c.type = enScoreCategoryType::OddSum;
 	c.group = enCategoryGroup::SumRule;   
 	c.sortOrder = 20;
-	c.name = L"オッドサム";
+	c.name = L"オッド・サム";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 2 != 0) ? s : 0; };
 	return c;
 }
@@ -109,7 +109,7 @@ ScoreCategory MakeEvenSum()
 	c.type = enScoreCategoryType::EvenSum;
 	c.group = enCategoryGroup::SumRule;   
 	c.sortOrder = 21;
-	c.name = L"イーブンサム";
+	c.name = L"イーブン・サム";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 2 == 0) ? s : 0; };
 	return c;
 }
@@ -120,7 +120,7 @@ ScoreCategory MakeFiveMultiple()
 	c.type = enScoreCategoryType::FiveMultiple;
 	c.group = enCategoryGroup::SumRule;  
 	c.sortOrder = 23;
-	c.name = L"ファイブ倍";
+	c.name = L"マルチプル5";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 5 == 0) ? s + 5 : 0; };
 	return c;
 }
@@ -131,7 +131,7 @@ ScoreCategory MakeThreeMultiple()
 	c.type = enScoreCategoryType::ThreeMultiple;
 	c.group = enCategoryGroup::SumRule;
 	c.sortOrder = 22;
-	c.name = L"スリー倍";
+	c.name = L"マルチプル3";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 3 == 0) ? s + 3 : 0; };
 	return c;
 }

@@ -30,9 +30,11 @@ void DiceInputController::Update(DiceRound& round)
 	{
 		bool down = IsKeyDown(keyCodes[i]);
 		if (down && !m_prevKeyState[i])
-		{
-			round.ToggleKeep(i);
-			PrintState(round);
+		{  
+			if (round.GetRollState()==enRollState::Settled) {
+				round.ToggleKeep(i);
+				PrintState(round);
+			}	
 		}
 		m_prevKeyState[i] = down;
 	}
