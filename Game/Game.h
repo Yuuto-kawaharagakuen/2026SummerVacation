@@ -25,6 +25,7 @@ private:
 	bool m_hasPrintedResult[kDiceNum] = {};
 
 	ModelRender m_trayModelRender;
+	ModelRender m_BackGround;
 	DiceRound m_playerRound;
 	DiceInputController m_inputController;
 	Vector3 m_pos;

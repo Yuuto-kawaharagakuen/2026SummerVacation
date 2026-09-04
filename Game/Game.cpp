@@ -75,6 +75,9 @@ bool Game::Start()
 	m_trayModelRender.Init("Assets/modelData/Tray.tkm");
 	m_trayModelRender.SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 
+	m_BackGround.Init("Assets/modelData/BackGround.tkm");
+	m_BackGround.SetPosition(Vector3(0.0f, -200.0f, 0.0f));
+	m_BackGround.SetScale(Vector3(10.0f, 10.0f, 10.0f));
 	Matrix upAxisFix;
 	upAxisFix.MakeRotationX(Math::DegToRad(-90.0f));
 	m_trayCollider.CreateFromModel(m_trayModelRender.GetModel(), upAxisFix);
@@ -276,7 +279,7 @@ void Game::Render(RenderContext& rc)
 	m_whiteRender.Draw(rc);
 	m_scoreBoardView.Render(rc);
 	m_trayModelRender.Draw(rc);
-
+	m_BackGround.Draw(rc);
 	for (int i = 0; i < kDiceNum; i++)
 	{
 		m_dices[i].Render(rc);
