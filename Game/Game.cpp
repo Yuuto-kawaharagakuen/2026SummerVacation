@@ -27,52 +27,97 @@ namespace
 	}
 }
 
-void Game::RunCpuTurnInstant()
+void Game::StartCpuTurn()
 {
-	OutputDebugStringW(L"==== CPUのターン開始 ====\n");
+	m_cpuPhase = enCpuPhase::ThinkingFirstRoll;
+	m_cpuWaitFrames = kCpuThinkFrames;
+}
 
-	DiceRound cpuRound;
-	cpuRound.StartNewRound();
-	PrintDice(L"1投目", cpuRound.GetDice());
+void Game::UpdateCpuTurn()
+{
+	if (m_isDiceRolling) return; // 物理演算中は共通ロジックに任せる
 
-	while (cpuRound.GetRollsRemaining() > 0)
+	if (m_cpuPhase == enCpuPhase::ThinkingFirstRoll || m_cpuPhase == enCpuPhase::ThinkingReroll)
 	{
-		auto mask = m_cpuPlayer.DecideKeepMask(cpuRound.GetDice(), m_board, m_cpuFilled);
+		m_cpuWaitFrames--;
+		if (m_cpuWaitFrames <= 0)
+		{
+			if (m_cpuPhase == enCpuPhase::ThinkingFirstRoll)
+			{
+				m_round.StartNewRound(); // 内部でRolling状態になる
+			}
+			else
+			{
+				m_round.RollDice();
+			}
+			m_cpuPhase = enCpuPhase::Idle;
+			// 実際の物理ロールは、Update()内の既存のRolling検知ブロックが自動でやってくれる
+		}
+		return;
+	}
+
+	if (m_cpuPhase == enCpuPhase::Idle && m_round.GetRollState() == enRollState::Settled)
+	{
+		CpuDecideAndAct();
+	}
+}
+
+void Game::CpuDecideAndAct()
+{
+	if (m_round.GetRollsRemaining() > 0)
+	{
+		// キープ判断
+		auto mask = m_cpuPlayer.DecideKeepMask(m_round.GetDice(), m_board, m_cpuFilled);
+		auto currentMask = m_round.GetKeepMask();
+		for (int i = 0; i < kDiceNum; i++)
+		{
+			if (mask[i] != currentMask[i])
+			{
+				m_round.ToggleKeep(i);
+				if (mask[i])
+				{
+					m_dices[i].SnapToHeldSlot(GetHeldSlotPosition(i));
+				}
+				else
+				{
+					m_dices[i].ReturnToPhysics();
+				}
+			}
+		}
 
 		wchar_t keepBuf[64];
-		swprintf_s(keepBuf, L"キープ判断 : [%d,%d,%d,%d,%d]\n",
+		swprintf_s(keepBuf, L"CPUキープ判断 : [%d,%d,%d,%d,%d]\n",
 			mask[0], mask[1], mask[2], mask[3], mask[4]);
 		OutputDebugStringW(keepBuf);
 
-		for (int i = 0; i < 5; i++)
+		// 少し待ってから振る
+		m_cpuPhase = enCpuPhase::ThinkingReroll;
+		m_cpuWaitFrames = kCpuThinkFrames;
+	}
+	else
+	{
+		// 役を決定
+		int categoryIndex = m_cpuPlayer.DecideCategoryToFill(m_round.GetDice(), m_board, m_cpuFilled);
+		if (categoryIndex >= 0)
 		{
-			if (mask[i] != cpuRound.GetKeepMask()[i]) cpuRound.ToggleKeep(i);
+			int score = m_board[categoryIndex].calcScore(m_round.GetDice());
+			m_cpuScores[categoryIndex] = score;
+			m_cpuFilled[categoryIndex] = true;
+
+			wchar_t buf[128];
+			swprintf_s(buf, L"CPU役確定: %ls / 得点: %d\n", m_board[categoryIndex].name.c_str(), score);
+			OutputDebugStringW(buf);
 		}
 
-		cpuRound.RollDice(); // 内部状態(残り回数)だけ更新
+		// キープ中のダイスを全部物理に戻す
+		const auto& keepMask = m_round.GetKeepMask();
+		for (int i = 0; i < kDiceNum; i++)
+		{
+			if (keepMask[i]) m_dices[i].ReturnToPhysics();
+		}
 
-		DiceValues newDice = RollRandomDice(cpuRound.GetDice(), cpuRound.GetKeepMask());
-		cpuRound.CompleteRoll(newDice);
-
-		wchar_t rollLabel[32];
-		swprintf_s(rollLabel, L"振り直し後(残り%d回)", cpuRound.GetRollsRemaining());
-		PrintDice(rollLabel, cpuRound.GetDice());
+		SwitchTurn(); // プレイヤーのターンへ
 	}
-
-	int categoryIndex = m_cpuPlayer.DecideCategoryToFill(cpuRound.GetDice(), m_board, m_cpuFilled);
-	if (categoryIndex >= 0)
-	{
-		int score = m_board[categoryIndex].calcScore(cpuRound.GetDice());
-		m_cpuScores[categoryIndex] = score;
-		m_cpuFilled[categoryIndex] = true;
-
-		wchar_t resultBuf[128];
-		swprintf_s(resultBuf, L"選んだ役 : %ls / 得点 : %d\n",
-			m_board[categoryIndex].name.c_str(), score);
-		OutputDebugStringW(resultBuf);
-	}
-
-	OutputDebugStringW(L"==== CPUのターン終了 ====\n\n");
 }
 void Game::SwitchTurn()
 {
@@ -80,20 +125,21 @@ void Game::SwitchTurn()
 	{
 		m_currentTurn = enTurnOwner::Cpu;
 		OutputDebugStringW(L"---- CPUのターン ----\n");
-
-		RunCpuTurnInstant(); // ステップ①では物理演出なし、瞬時に計算
-
-		// すぐプレイヤーのターンに戻す
+		//m_turnText.SetText(L"CPUのターン"); 
+		StartCpuTurn();
+	}
+	else
+	{
 		m_currentTurn = enTurnOwner::Player;
 		OutputDebugStringW(L"---- プレイヤーのターン ----\n");
+		//m_turnText.SetText(L"あなたのターン"); 
+		m_round.StartNewRound();
+		for (int i = 0; i < kDiceNum; i++)
+		{
+			m_dices[i].Roll();
+		}
+		m_isDiceRolling = true;
 	}
-
-	m_round.StartNewRound();
-	for (int i = 0; i < kDiceNum; i++)
-	{
-		m_dices[i].Roll();
-	}
-	m_isDiceRolling = true;
 }
 
 
@@ -111,6 +157,11 @@ bool Game::Start()
 
 	m_trayModelRender.Init("Assets/modelData/Tray.tkm");
 	m_trayModelRender.SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+
+	m_turnText.SetPosition({ -100.0f, 520.0f, 0.0f }); // 画面上部、位置はお好みで調整
+	m_turnText.SetScale(1.5f);
+	m_turnText.SetColor(g_vec4Black);
+	m_turnText.SetText(L"あなたのターン");
 
 	m_BackGround.Init("Assets/modelData/BackGround.tkm");
 	m_BackGround.SetPosition(Vector3(0.0f, -200.0f, 0.0f));
@@ -299,6 +350,35 @@ void Game::Update()
 			SwitchTurn(); 
 		}
 	}
+	if (m_currentTurn == enTurnOwner::Cpu)
+	{
+		UpdateCpuTurn();
+	}
+	// ターン表示の更新(何投目かも含める)
+	{
+		int currentRollNumber;
+		if (m_currentTurn == enTurnOwner::Cpu && m_cpuPhase == enCpuPhase::ThinkingFirstRoll)
+		{
+			currentRollNumber = 1; // CPUの最初のロール前は、まだ古いm_roundの状態を見ない
+		}
+		else
+		{
+			currentRollNumber = DiceRound::kMaxRolls - m_round.GetRollsRemaining();
+			if (currentRollNumber > DiceRound::kMaxRolls) currentRollNumber = DiceRound::kMaxRolls; // 念のためクランプ
+			if (currentRollNumber < 1) currentRollNumber = 1;
+		}
+
+		wchar_t turnBuf[32];
+		if (m_currentTurn == enTurnOwner::Player)
+		{
+			swprintf_s(turnBuf, L"あなたのターン %d/%d", currentRollNumber, DiceRound::kMaxRolls);
+		}
+		else
+		{
+			swprintf_s(turnBuf, L"CPUのターン %d/%d", currentRollNumber, DiceRound::kMaxRolls);
+		}
+		m_turnText.SetText(turnBuf);
+	}
 	m_scoreBoardView.Update(m_board,
 		m_playerFilled, m_playerScores, m_round.GetDice(),
 		m_cpuFilled, m_cpuScores,
@@ -316,6 +396,7 @@ void Game::Render(RenderContext& rc)
 	m_scoreBoardView.Render(rc);
 	m_trayModelRender.Draw(rc);
 	m_BackGround.Draw(rc);
+	m_turnText.Draw(rc);
 	for (int i = 0; i < kDiceNum; i++)
 	{
 		m_dices[i].Render(rc);

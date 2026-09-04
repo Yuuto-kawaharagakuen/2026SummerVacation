@@ -59,7 +59,7 @@ void ScoreBoardView::Update(const std::vector<ScoreCategory>& board,
 			swprintf_s(playerBuf, L" %d", playerScores[i]);
 			m_playerScoreTexts[i].SetColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
 		}
-		else if (isPlayerTurn) 
+		else if (isPlayerTurn)
 		{
 			int preview = board[i].calcScore(playerCurrentDice);
 			swprintf_s(playerBuf, L"(%d)", preview);
@@ -67,7 +67,8 @@ void ScoreBoardView::Update(const std::vector<ScoreCategory>& board,
 		}
 		else
 		{
-			swprintf_s(playerBuf, L"");
+			swprintf_s(playerBuf, L" 0"); // ★空文字→" 0"に変更
+			m_playerScoreTexts[i].SetColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f)); // ★グレーにしておく(未確定だが自分のターンではないことがわかるように)
 		}
 		m_playerScoreTexts[i].SetText(playerBuf);
 

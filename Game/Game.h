@@ -16,6 +16,13 @@ enum class enTurnOwner
 	Cpu,
 };
 
+enum class enCpuPhase
+{
+	Idle,
+	ThinkingFirstRoll,  // ターン開始後、最初のロール前の「考え中」待機
+	ThinkingReroll,      // キープ決定後、再ロール前の「考え中」待機
+};
+
 class Game : public IGameObject
 {
 public:
@@ -33,6 +40,7 @@ private:
 
 	ModelRender m_trayModelRender;
 	ModelRender m_BackGround;
+	FontRender m_turnText;
 	DiceRound m_round;                          
 	DiceInputController m_inputController;
 	Vector3 m_pos;
@@ -53,10 +61,15 @@ private:
 	ScoreBoardView m_scoreBoardView;
 	ScoreSelectController m_scoreSelectController;
 
-	enTurnOwner m_currentTurn = enTurnOwner::Player; 
-	CpuPlayer m_cpuPlayer;                            
-	void RunCpuTurnInstant();                          
-	void SwitchTurn();                                  
-
 	SkyCube* skyCube = nullptr;
+
+	enTurnOwner m_currentTurn = enTurnOwner::Player;
+	CpuPlayer m_cpuPlayer;
+	void SwitchTurn();
+	enCpuPhase m_cpuPhase = enCpuPhase::Idle;
+	int m_cpuWaitFrames = 0;
+	static const int kCpuThinkFrames = 60; //(60fps想定)
+	void StartCpuTurn();
+	void UpdateCpuTurn();
+	void CpuDecideAndAct();
 };
