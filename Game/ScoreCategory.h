@@ -17,7 +17,7 @@ enum class enScoreCategoryType
 enum class enCategoryGroup   
 {
 	Number,   // 1の目~6の目
-	SumRule,  // オッドサム、イーブンサム、ファイブ倍、スリー倍、ロー、ハイ
+	SumRule,  // オッドサム、イーブンサム、マルチプル5、マルチプル3、ロー、ハイ
 	Shape,    // レインボー、フルハウス、スリーカード、フォーカード、S/Lストレート
 	Chance,   // チャンス
 	Yacht,    // ヨット

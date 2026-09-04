@@ -109,7 +109,7 @@ ScoreCategory MakeEvenSum()
 	c.type = enScoreCategoryType::EvenSum;
 	c.group = enCategoryGroup::SumRule;   
 	c.sortOrder = 21;
-	c.name = L"イーブン・サム";
+	c.name = L"イーブンサム";
 	c.calcScore = [](const DiceValues& d) { int s = SumAll(d); return (s % 2 == 0) ? s : 0; };
 	return c;
 }

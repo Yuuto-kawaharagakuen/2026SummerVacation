@@ -89,8 +89,8 @@ bool Game::Start()
 	trayInfo.mass = 0.0f;
 	m_trayRigidBody.Init(trayInfo);
 
-	g_camera3D->SetPosition(Vector3(0.0f, 500.0f, 0.0f));
-	g_camera3D->SetTarget(Vector3(0.0f, 0.0f, 0.0f));
+	g_camera3D->SetPosition(Vector3(-100.0f, 500.0f, 0.0f));
+	g_camera3D->SetTarget(Vector3(-100.0f, 0.0f, 0.0f));
 	g_camera3D->SetUp(Vector3(0.0f, 0.0f, 1.0f));
 
 	m_heldSlotPositions[0] = Vector3(220.0f, 150.0f, 150.0f);
