@@ -6,7 +6,9 @@ namespace
 	const float kStartY = 400.0f;
 	const float kLineHeight = 40.0f;
 	const float kNameX = -850.0f;
-	const float kScoreX = -590.0f;
+	const float kPlayerScoreX = -590.0f;
+	const float kCpuScoreX = -480.0f;  
+	const float kPlayerHeaderX = kPlayerScoreX - 30.0f; 
 }
 
 void ScoreBoardView::Init(const std::vector<ScoreCategory>& board)
@@ -20,43 +22,80 @@ void ScoreBoardView::Init(const std::vector<ScoreCategory>& board)
 		m_nameTexts[i].SetText(board[i].name.c_str());
 		m_nameTexts[i].SetPosition({ kNameX, y, 0.0f });
 		m_nameTexts[i].SetScale(1.0f);
-		m_nameTexts[i].SetColor(g_vec4White);
+		m_nameTexts[i].SetColor(g_vec4Black);
 
-		m_scoreTexts[i].SetPosition({ kScoreX, y, 0.0f });
-		m_scoreTexts[i].SetScale(1.0f);
+		m_playerScoreTexts[i].SetPosition({ kPlayerScoreX, y, 0.0f });
+		m_playerScoreTexts[i].SetScale(1.0f);
+
+		m_cpuScoreTexts[i].SetPosition({ kCpuScoreX, y, 0.0f }); 
+		m_cpuScoreTexts[i].SetScale(1.0f);
+		m_cpuScoreTexts[i].SetColor(Vector4(1.0f, 0.0f, 0.0f, 1.0f));
 	}
+	
+	float headerY = kStartY + kLineHeight; 
+
+	m_playerHeaderText.SetText(L"あなた");
+	m_playerHeaderText.SetPosition({ kPlayerHeaderX, headerY, 0.0f });
+	m_playerHeaderText.SetScale(1.0f);
+	m_playerHeaderText.SetColor(g_vec4Black);
+
+	m_cpuHeaderText.SetText(L"CPU");
+	m_cpuHeaderText.SetPosition({ kCpuScoreX, headerY, 0.0f });
+	m_cpuHeaderText.SetScale(1.0f);
+	m_cpuHeaderText.SetColor(g_vec4Black);
 }
 
-void ScoreBoardView::Update(const std::vector<ScoreCategory>& board, const std::vector<bool>& filled,
-	const std::vector<int>& finalScores, const DiceValues& currentDice,
-	int selectedIndex)
+void ScoreBoardView::Update(const std::vector<ScoreCategory>& board,
+	const std::vector<bool>& playerFilled, const std::vector<int>& playerScores, const DiceValues& playerCurrentDice,
+	const std::vector<bool>& cpuFilled, const std::vector<int>& cpuScores,
+	int selectedIndex, bool isPlayerTurn)
 {
 	for (int i = 0; i < m_numCategories; i++)
 	{
-		wchar_t buf[16];
-		if (filled[i])
+		// --- あなたの列 ---
+		wchar_t playerBuf[16];
+		if (playerFilled[i])
 		{
-			swprintf_s(buf, L" %d", finalScores[i]);
-			m_scoreTexts[i].SetColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
+			swprintf_s(playerBuf, L" %d", playerScores[i]);
+			m_playerScoreTexts[i].SetColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
+		}
+		else if (isPlayerTurn) 
+		{
+			int preview = board[i].calcScore(playerCurrentDice);
+			swprintf_s(playerBuf, L"(%d)", preview);
+			m_playerScoreTexts[i].SetColor(i == selectedIndex ? g_vec4Yellow : g_vec4Cyan);
 		}
 		else
 		{
-			int preview = board[i].calcScore(currentDice);
-			swprintf_s(buf, L"(%d)", preview);
-			// 選択中の役は黄色、それ以外は今まで通りシアン
-			m_scoreTexts[i].SetColor(i == selectedIndex ? g_vec4Yellow : g_vec4Cyan);
+			swprintf_s(playerBuf, L"");
 		}
-		m_scoreTexts[i].SetText(buf);
+		m_playerScoreTexts[i].SetText(playerBuf);
 
-		// 選択中の役名も色を変えてわかりやすくする
-		m_nameTexts[i].SetColor(i == selectedIndex ? g_vec4Yellow : g_vec4White);
+		// --- CPUの列 ---
+		wchar_t cpuBuf[16];
+		if (cpuFilled[i])
+		{
+			swprintf_s(cpuBuf, L" %d", cpuScores[i]);
+		}
+		else
+		{
+			swprintf_s(cpuBuf, L" 0"); 
+		}
+		m_cpuScoreTexts[i].SetText(cpuBuf);
+
+		// 役名の色(選択中はあなたのターンの時だけ黄色)
+		m_nameTexts[i].SetColor((isPlayerTurn && i == selectedIndex) ? g_vec4Yellow : g_vec4Black); 
 	}
 }
+
 void ScoreBoardView::Render(RenderContext& rc)
 {
 	for (int i = 0; i < m_numCategories; i++)
 	{
 		m_nameTexts[i].Draw(rc);
-		m_scoreTexts[i].Draw(rc);
+		m_playerScoreTexts[i].Draw(rc);
+		m_cpuScoreTexts[i].Draw(rc);
 	}
+	m_playerHeaderText.Draw(rc); 
+	m_cpuHeaderText.Draw(rc);    
 }

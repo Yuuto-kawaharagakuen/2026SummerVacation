@@ -13,52 +13,89 @@ namespace
 		swprintf_s(buf, L"%ls : [%d,%d,%d,%d,%d]\n", label, dice[0], dice[1], dice[2], dice[3], dice[4]);
 		OutputDebugStringW(buf);
 	}
-
-	void RunCpuTurn()
+	DiceValues RollRandomDice(const DiceValues& current, const std::array<bool, 5>& keepMask)
 	{
-		OutputDebugStringW(L"==== CPUのターン開始 ====\n");
-
-		auto board = BuildMatchScoreboard();
-		std::vector<bool> filled(board.size(), false);
-
-		CpuPlayer cpu;
-		DiceRound round;
-		round.StartNewRound();
-		PrintDice(L"1投目", round.GetDice());
-
-		while (round.GetRollsRemaining() > 0)
+		DiceValues result = current;
+		for (int i = 0; i < 5; i++)
 		{
-			auto mask = cpu.DecideKeepMask(round.GetDice(), board, filled);
-
-			wchar_t keepBuf[64];
-			swprintf_s(keepBuf, L"キープ判断 : [%d,%d,%d,%d,%d]\n",
-				mask[0], mask[1], mask[2], mask[3], mask[4]);
-			OutputDebugStringW(keepBuf);
-
-			for (int i = 0; i < 5; i++)
+			if (!keepMask[i])
 			{
-				if (mask[i] != round.GetKeepMask()[i]) round.ToggleKeep(i);
+				result[i] = (rand() % 6) + 1; // 1〜6のランダム値
 			}
-			round.RollDice();
-
-			wchar_t rollLabel[32];
-			swprintf_s(rollLabel, L"振り直し後(残り%d回)", round.GetRollsRemaining());
-			PrintDice(rollLabel, round.GetDice());
 		}
-
-		int categoryIndex = cpu.DecideCategoryToFill(round.GetDice(), board, filled);
-		if (categoryIndex >= 0)
-		{
-			int score = board[categoryIndex].calcScore(round.GetDice());
-			wchar_t resultBuf[128];
-			swprintf_s(resultBuf, L"選んだ役 : %ls / 得点 : %d\n",
-				board[categoryIndex].name.c_str(), score);
-			OutputDebugStringW(resultBuf);
-		}
-
-		OutputDebugStringW(L"==== CPUのターン終了 ====\n\n");
+		return result;
 	}
 }
+
+void Game::RunCpuTurnInstant()
+{
+	OutputDebugStringW(L"==== CPUのターン開始 ====\n");
+
+	DiceRound cpuRound;
+	cpuRound.StartNewRound();
+	PrintDice(L"1投目", cpuRound.GetDice());
+
+	while (cpuRound.GetRollsRemaining() > 0)
+	{
+		auto mask = m_cpuPlayer.DecideKeepMask(cpuRound.GetDice(), m_board, m_cpuFilled);
+
+		wchar_t keepBuf[64];
+		swprintf_s(keepBuf, L"キープ判断 : [%d,%d,%d,%d,%d]\n",
+			mask[0], mask[1], mask[2], mask[3], mask[4]);
+		OutputDebugStringW(keepBuf);
+
+		for (int i = 0; i < 5; i++)
+		{
+			if (mask[i] != cpuRound.GetKeepMask()[i]) cpuRound.ToggleKeep(i);
+		}
+
+		cpuRound.RollDice(); // 内部状態(残り回数)だけ更新
+
+		DiceValues newDice = RollRandomDice(cpuRound.GetDice(), cpuRound.GetKeepMask());
+		cpuRound.CompleteRoll(newDice);
+
+		wchar_t rollLabel[32];
+		swprintf_s(rollLabel, L"振り直し後(残り%d回)", cpuRound.GetRollsRemaining());
+		PrintDice(rollLabel, cpuRound.GetDice());
+	}
+
+	int categoryIndex = m_cpuPlayer.DecideCategoryToFill(cpuRound.GetDice(), m_board, m_cpuFilled);
+	if (categoryIndex >= 0)
+	{
+		int score = m_board[categoryIndex].calcScore(cpuRound.GetDice());
+		m_cpuScores[categoryIndex] = score;
+		m_cpuFilled[categoryIndex] = true;
+
+		wchar_t resultBuf[128];
+		swprintf_s(resultBuf, L"選んだ役 : %ls / 得点 : %d\n",
+			m_board[categoryIndex].name.c_str(), score);
+		OutputDebugStringW(resultBuf);
+	}
+
+	OutputDebugStringW(L"==== CPUのターン終了 ====\n\n");
+}
+void Game::SwitchTurn()
+{
+	if (m_currentTurn == enTurnOwner::Player)
+	{
+		m_currentTurn = enTurnOwner::Cpu;
+		OutputDebugStringW(L"---- CPUのターン ----\n");
+
+		RunCpuTurnInstant(); // ステップ①では物理演出なし、瞬時に計算
+
+		// すぐプレイヤーのターンに戻す
+		m_currentTurn = enTurnOwner::Player;
+		OutputDebugStringW(L"---- プレイヤーのターン ----\n");
+	}
+
+	m_round.StartNewRound();
+	for (int i = 0; i < kDiceNum; i++)
+	{
+		m_dices[i].Roll();
+	}
+	m_isDiceRolling = true;
+}
+
 
 bool Game::Start()
 {
@@ -68,8 +105,8 @@ bool Game::Start()
 
 	PhysicsWorld::GetInstance()->SetGravity(Vector3(0.0f, -300.0f, 0.0f));
 
-	m_whiteRender.Init("Assets/SIRO.DDS", 400.0f, 600.0f);
-	m_whiteRender.SetPosition({ -700.0f, 125.0f, 0.0f });
+	m_whiteRender.Init("Assets/SIRO.DDS", 500.0f, 700.0f);
+	m_whiteRender.SetPosition({ -650.0f, 125.0f, 0.0f });
 	m_whiteRender.SetMulColor(Vector4(1.0f, 1.0f, 1.0f, 0.5f)); // 最後の0.5fがアルファ(不透明度)、0が完全透明、1が不透明
 
 	m_trayModelRender.Init("Assets/modelData/Tray.tkm");
@@ -89,8 +126,8 @@ bool Game::Start()
 	trayInfo.mass = 0.0f;
 	m_trayRigidBody.Init(trayInfo);
 
-	g_camera3D->SetPosition(Vector3(-100.0f, 500.0f, 0.0f));
-	g_camera3D->SetTarget(Vector3(-100.0f, 0.0f, 0.0f));
+	g_camera3D->SetPosition(Vector3(-70.0f, 500.0f, 0.0f));
+	g_camera3D->SetTarget(Vector3(-70.0f, 0.0f, 0.0f));
 	g_camera3D->SetUp(Vector3(0.0f, 0.0f, 1.0f));
 
 	m_heldSlotPositions[0] = Vector3(220.0f, 150.0f, 150.0f);
@@ -99,14 +136,16 @@ bool Game::Start()
 	m_heldSlotPositions[3] = Vector3(220.0f, 150.0f, -75.0f);
 	m_heldSlotPositions[4] = Vector3(220.0f, 150.0f, -150.0f);
 
-	m_playerRound.StartNewRound();
-	m_playerBoard = BuildMatchScoreboard();
-	m_playerFilled.assign(m_playerBoard.size(), false);
-	m_playerScores.assign(m_playerBoard.size(), 0);
-	m_scoreBoardView.Init(m_playerBoard);
+	m_round.StartNewRound(); 
+	m_board = BuildMatchScoreboard(); 
+	m_playerFilled.assign(m_board.size(), false);
+	m_playerScores.assign(m_board.size(), 0);
+	m_cpuFilled.assign(m_board.size(), false);   
+	m_cpuScores.assign(m_board.size(), 0);       
+	m_scoreBoardView.Init(m_board);
 	OutputDebugStringW(L"---- プレイヤーのターン開始 ----\n");
 	{
-		const auto& dice = m_playerRound.GetDice();
+		const auto& dice = m_round.GetDice();
 		wchar_t buf[128];
 		swprintf_s(buf, L"1投目:[%d,%d,%d,%d,%d]\n", dice[0], dice[1], dice[2], dice[3], dice[4]);
 		OutputDebugStringW(buf);
@@ -168,11 +207,11 @@ void Game::Update()
 
 
 	// キーボード入力(1〜5キー)でToggleKeepが呼ばれる。呼び出し前後でkeepFMaskを比較する。
-	auto prevKeepMask = m_playerRound.GetKeepMask();
+	auto prevKeepMask = m_round.GetKeepMask();
 
-	m_inputController.Update(m_playerRound);
+	m_inputController.Update(m_round);
 
-	auto currentKeepMask = m_playerRound.GetKeepMask();
+	auto currentKeepMask = m_round.GetKeepMask();
 	for (int i = 0; i < kDiceNum; i++)
 	{
 		if (currentKeepMask[i] && !prevKeepMask[i])
@@ -189,10 +228,10 @@ void Game::Update()
 	m_trayModelRender.Update();
 
 	// プレイヤーが「振る」操作をして Rolling 状態になったら、物理ダイスを実際に転がす
-	if (m_playerRound.GetRollState() == enRollState::Rolling && !m_isDiceRolling)
+	if (m_round.GetRollState() == enRollState::Rolling && !m_isDiceRolling)
 	{
 		m_isDiceRolling = true;
-		const auto& keepMask = m_playerRound.GetKeepMask();
+		const auto& keepMask = m_round.GetKeepMask();
 		for (int i = 0; i < kDiceNum; i++)
 		{
 			if (!keepMask[i]) m_dices[i].Roll(); // キープしてないダイスだけ振る
@@ -218,7 +257,7 @@ void Game::Update()
 			{
 				results[i] = m_dices[i].GetFaceValue();
 			}
-			m_playerRound.CompleteRoll(results);
+			m_round.CompleteRoll(results);
 			m_isDiceRolling = false;
 
 			for (int i = 0; i < kDiceNum; i++)
@@ -227,28 +266,28 @@ void Game::Update()
 			}
 
 			// 確認用: DiceRoundに反映された出目をログ出力
-			const auto& finalDice = m_playerRound.GetDice();
+			const auto& finalDice = m_round.GetDice();
 			wchar_t buf[128];
 			swprintf_s(buf, L"確定した出目:[%d,%d,%d,%d,%d]\n",
 				finalDice[0], finalDice[1], finalDice[2], finalDice[3], finalDice[4]);
 			OutputDebugStringW(buf);
 		}
 	}
-	if (!m_isDiceRolling && m_playerRound.GetRollState() == enRollState::Settled)
+	if (!m_isDiceRolling && m_round.GetRollState() == enRollState::Settled && m_currentTurn == enTurnOwner::Player) 
 	{
 		int confirmedIndex = -1;
-		bool confirmed = m_scoreSelectController.Update(m_playerBoard, m_playerFilled, confirmedIndex);
+		bool confirmed = m_scoreSelectController.Update(m_board, m_playerFilled, confirmedIndex); 
 		if (confirmed)
 		{
-			int score = m_playerBoard[confirmedIndex].calcScore(m_playerRound.GetDice());
+			int score = m_board[confirmedIndex].calcScore(m_round.GetDice());
 			m_playerScores[confirmedIndex] = score;
 			m_playerFilled[confirmedIndex] = true;
 
 			wchar_t buf[128];
-			swprintf_s(buf, L"役確定: %ls / 得点: %d\n", m_playerBoard[confirmedIndex].name.c_str(), score);
+			swprintf_s(buf, L"役確定: %ls / 得点: %d\n", m_board[confirmedIndex].name.c_str(), score);
 			OutputDebugStringW(buf);
 
-			const auto& keepMaskBeforeReset = m_playerRound.GetKeepMask();
+			const auto& keepMaskBeforeReset = m_round.GetKeepMask();
 			for (int i = 0; i < kDiceNum; i++)
 			{
 				if (keepMaskBeforeReset[i])
@@ -256,17 +295,14 @@ void Game::Update()
 					m_dices[i].ReturnToPhysics();
 				}
 			}
-			// 次のラウンドへ
-			m_playerRound.StartNewRound();
-			for (int i = 0; i < kDiceNum; i++)
-			{
-				m_dices[i].Roll(); // 新しいラウンドの初回ロールを実際に転がす
-			}
-			m_isDiceRolling = true;
+
+			SwitchTurn(); 
 		}
 	}
-	m_scoreBoardView.Update(m_playerBoard, m_playerFilled, m_playerScores, m_playerRound.GetDice(),
-		m_scoreSelectController.GetSelectedIndex());
+	m_scoreBoardView.Update(m_board,
+		m_playerFilled, m_playerScores, m_round.GetDice(),
+		m_cpuFilled, m_cpuScores,
+		m_scoreSelectController.GetSelectedIndex(), m_currentTurn == enTurnOwner::Player);
 }
 
 Vector3 Game::GetHeldSlotPosition(int diceIndex) const

@@ -3,11 +3,18 @@
 #include "Level3DRender/LevelRender.h"
 #include "DiceRound.h"
 #include "DiceInputController.h"
-#include"Dice.h"
+#include "Dice.h"
 #include "ScoreCategory.h" 
 #include "ScoreBoardView.h" 
 #include "ScoreSelectController.h"
+#include "CpuPlayer.h"
 class Player;
+
+enum class enTurnOwner
+{
+	Player,
+	Cpu,
+};
 
 class Game : public IGameObject
 {
@@ -20,28 +27,36 @@ public:
 
 private:
 
-    static const int kDiceNum = 5;
+	static const int kDiceNum = 5;
 	Dice m_dices[kDiceNum];
 	bool m_hasPrintedResult[kDiceNum] = {};
 
 	ModelRender m_trayModelRender;
 	ModelRender m_BackGround;
-	DiceRound m_playerRound;
+	DiceRound m_round;                          
 	DiceInputController m_inputController;
 	Vector3 m_pos;
 	Vector3 GetHeldSlotPosition(int diceIndex) const;
 	Vector3 CalcWorldPosFromScreenAndHeight(float screenX, float screenY, float worldY) const;
-	SpriteRender m_whiteRender;//白色のスコアボード
+	SpriteRender m_whiteRender;
 	MeshCollider m_trayCollider;
 	RigidBody m_trayRigidBody;
 	bool m_isDiceRolling = false;
 	Vector3 m_heldSlotPositions[kDiceNum];
-	std::vector<ScoreCategory> m_playerBoard;   // 13ランダム+ヨット固定の役一覧
-	std::vector<bool> m_playerFilled;           // 埋まったかどうか
-	std::vector<int> m_playerScores;            // 確定した得点(未確定は0でOK)
-	ScoreBoardView m_scoreBoardView;            // 見た目の表示担当
+
+	std::vector<ScoreCategory> m_board;        
+	std::vector<bool> m_playerFilled;
+	std::vector<int> m_playerScores;
+	std::vector<bool> m_cpuFilled;               
+	std::vector<int> m_cpuScores;                
+
+	ScoreBoardView m_scoreBoardView;
 	ScoreSelectController m_scoreSelectController;
+
+	enTurnOwner m_currentTurn = enTurnOwner::Player; 
+	CpuPlayer m_cpuPlayer;                            
+	void RunCpuTurnInstant();                          
+	void SwitchTurn();                                  
 
 	SkyCube* skyCube = nullptr;
 };
-
