@@ -8,6 +8,7 @@
 #include "ScoreBoardView.h" 
 #include "ScoreSelectController.h"
 #include "CpuPlayer.h"
+#include "ResultView.h"
 class Player;
 
 enum class enTurnOwner
@@ -15,7 +16,11 @@ enum class enTurnOwner
 	Player,
 	Cpu,
 };
-
+enum class enGamePhase 
+{
+	Playing,
+	Result,
+};
 enum class enCpuPhase
 {
 	Idle,
@@ -72,4 +77,8 @@ private:
 	void StartCpuTurn();
 	void UpdateCpuTurn();
 	void CpuDecideAndAct();
+
+	enGamePhase m_gamePhase = enGamePhase::Playing; 
+	ResultView m_resultView;                          
+	bool IsGameFinished() const;
 };

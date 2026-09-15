@@ -5,6 +5,7 @@
 #include "CpuPlayer.h"
 #include "Dice.h"
 #include "ScoreSelectController.h"
+#include "ResultView.h"
 namespace
 {
 	void PrintDice(const wchar_t* label, const DiceValues& dice)
@@ -116,7 +117,14 @@ void Game::CpuDecideAndAct()
 			if (keepMask[i]) m_dices[i].ReturnToPhysics();
 		}
 
-		SwitchTurn(); // プレイヤーのターンへ
+		if (IsGameFinished())
+		{
+			m_gamePhase = enGamePhase::Result;
+		}
+		else
+		{
+			SwitchTurn();
+		}
 	}
 }
 void Game::SwitchTurn()
@@ -194,6 +202,7 @@ bool Game::Start()
 	m_cpuFilled.assign(m_board.size(), false);   
 	m_cpuScores.assign(m_board.size(), 0);       
 	m_scoreBoardView.Init(m_board);
+	m_resultView.Init(m_board);
 	OutputDebugStringW(L"---- プレイヤーのターン開始 ----\n");
 	{
 		const auto& dice = m_round.GetDice();
@@ -223,6 +232,11 @@ bool Game::Start()
 
 void Game::Update()
 {
+	if (m_gamePhase == enGamePhase::Result)
+	{
+		m_resultView.Update(m_board, m_playerScores, m_cpuScores);
+		return; 
+	}
 	m_whiteRender.Update();
 
 	// Game.cpp の Update() 内、先頭に一時的に追加
@@ -346,8 +360,15 @@ void Game::Update()
 					m_dices[i].ReturnToPhysics();
 				}
 			}
-
-			SwitchTurn(); 
+			if (IsGameFinished())
+			{
+				m_gamePhase = enGamePhase::Result;
+			}
+			else
+			{
+				SwitchTurn();
+			}
+			
 		}
 	}
 	if (m_currentTurn == enTurnOwner::Cpu)
@@ -389,9 +410,21 @@ Vector3 Game::GetHeldSlotPosition(int diceIndex) const
 {
 	return m_heldSlotPositions[diceIndex];
 }
+bool Game::IsGameFinished() const
+{
+	for (bool f : m_playerFilled) { if (!f) return false; }
+	for (bool f : m_cpuFilled) { if (!f) return false; }
+	return true;
+}
 
 void Game::Render(RenderContext& rc)
 {
+	if (m_gamePhase == enGamePhase::Result)
+	{
+		m_resultView.Render(rc);
+		m_BackGround.Draw(rc);
+		return;
+	}
 	m_whiteRender.Draw(rc);
 	m_scoreBoardView.Render(rc);
 	m_trayModelRender.Draw(rc);

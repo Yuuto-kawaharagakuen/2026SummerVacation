@@ -229,6 +229,7 @@
     <ClCompile Include="DiceRound.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ResultView.cpp" />
     <ClCompile Include="ScoreBoardView.cpp" />
     <ClCompile Include="ScoreCategory.cpp" />
     <ClCompile Include="ScoreSelectController.cpp" />
@@ -238,6 +239,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Preview|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="system\system.cpp" />
+    <ClCompile Include="Title.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CpuPlayer.h" />
@@ -245,11 +247,13 @@
     <ClInclude Include="DiceInputController.h" />
     <ClInclude Include="DiceRound.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="ResultView.h" />
     <ClInclude Include="ScoreBoardView.h" />
     <ClInclude Include="ScoreCategory.h" />
     <ClInclude Include="ScoreSelectController.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="system\system.h" />
+    <ClInclude Include="Title.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
