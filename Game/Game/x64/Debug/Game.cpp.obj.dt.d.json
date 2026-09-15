@@ -1,7 +1,7 @@
 {
     "Version": "1.2",
     "Data": {
-        "Source": "c:\\my\\01_project\\02_game\\2026summervacation\\game\\title.cpp",
+        "Source": "c:\\my\\01_project\\02_game\\2026summervacation\\game\\game.cpp",
         "ProvidedModule": "",
         "Includes": [
             "c:\\my\\01_project\\02_game\\2026summervacation\\game\\stdafx.h",
@@ -675,8 +675,6 @@
             "c:\\my\\01_project\\02_game\\2026summervacation\\k2engine\\graphics\\light\\volumespotlight.h",
             "c:\\my\\01_project\\02_game\\2026summervacation\\k2engine\\graphics\\light\\volumelightbase.h",
             "c:\\my\\01_project\\02_game\\2026summervacation\\k2engine\\graphics\\light\\volumepointlight.h",
-            "c:\\my\\01_project\\02_game\\2026summervacation\\game\\title.h",
-            "c:\\my\\01_project\\02_game\\2026summervacation\\game\\explanation.h",
             "c:\\my\\01_project\\02_game\\2026summervacation\\game\\game.h",
             "c:\\my\\01_project\\02_game\\2026summervacation\\game\\diceround.h",
             "c:\\my\\01_project\\02_game\\2026summervacation\\game\\scorecategory.h",
@@ -685,7 +683,8 @@
             "c:\\my\\01_project\\02_game\\2026summervacation\\game\\scoreboardview.h",
             "c:\\my\\01_project\\02_game\\2026summervacation\\game\\scoreselectcontroller.h",
             "c:\\my\\01_project\\02_game\\2026summervacation\\game\\cpuplayer.h",
-            "c:\\my\\01_project\\02_game\\2026summervacation\\game\\resultview.h"
+            "c:\\my\\01_project\\02_game\\2026summervacation\\game\\resultview.h",
+            "c:\\my\\01_project\\02_game\\2026summervacation\\game\\title.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

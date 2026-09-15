@@ -31,8 +31,8 @@ enum class enCpuPhase
 class Game : public IGameObject
 {
 public:
-	Game() {}
-	~Game() {}
+	Game();
+	~Game();
 	bool Start();
 	void Update();
 	void Render(RenderContext& rc);
@@ -55,6 +55,7 @@ private:
 	MeshCollider m_trayCollider;
 	RigidBody m_trayRigidBody;
 	bool m_isDiceRolling = false;
+	bool m_prevResultSpaceState = false;
 	Vector3 m_heldSlotPositions[kDiceNum];
 
 	std::vector<ScoreCategory> m_board;        

@@ -21,6 +21,7 @@
     <ClCompile Include="ScoreSelectController.cpp" />
     <ClCompile Include="ResultView.cpp" />
     <ClCompile Include="Title.cpp" />
+    <ClCompile Include="Explanation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -37,5 +38,6 @@
     <ClInclude Include="ScoreSelectController.h" />
     <ClInclude Include="ResultView.h" />
     <ClInclude Include="Title.h" />
+    <ClInclude Include="Explanation.h" />
   </ItemGroup>
 </Project>

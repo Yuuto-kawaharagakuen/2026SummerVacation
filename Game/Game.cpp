@@ -6,6 +6,7 @@
 #include "Dice.h"
 #include "ScoreSelectController.h"
 #include "ResultView.h"
+#include "Title.h"
 namespace
 {
 	void PrintDice(const wchar_t* label, const DiceValues& dice)
@@ -25,6 +26,16 @@ namespace
 			}
 		}
 		return result;
+	}
+}
+Game::Game() {}
+
+Game::~Game()
+{
+	if (skyCube)
+	{
+		DeleteGO(skyCube);
+		skyCube = nullptr;
 	}
 }
 
@@ -120,6 +131,7 @@ void Game::CpuDecideAndAct()
 		if (IsGameFinished())
 		{
 			m_gamePhase = enGamePhase::Result;
+			m_prevResultSpaceState = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
 		}
 		else
 		{
@@ -225,8 +237,6 @@ bool Game::Start()
 
 	g_renderingEngine->SetAmbientByIBLTexture(skyCube->GetTextureFilePath(), 2.0f);
 
-	m_dices[0].SetKinematic(true);
-	m_dices[0].DebugSetRotationForCalibration(Quaternion::Identity);
 	return true;
 }
 
@@ -235,41 +245,19 @@ void Game::Update()
 	if (m_gamePhase == enGamePhase::Result)
 	{
 		m_resultView.Update(m_board, m_playerScores, m_cpuScores);
-		return; 
+
+		bool spaceState = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
+		if (spaceState && !m_prevResultSpaceState)
+		{
+			NewGO<Title>(0, "title");
+			DeleteGO(this);
+			return;
+		}
+		m_prevResultSpaceState = spaceState;
+
+		return;
 	}
 	m_whiteRender.Update();
-
-	// Game.cpp の Update() 内、先頭に一時的に追加
-	static int debugRotIndex = 0;
-	static bool prevNState = false;
-	bool nState = (GetAsyncKeyState('N') & 0x8000) != 0;
-	if (nState && !prevNState)
-	{
-		debugRotIndex = (debugRotIndex + 1) % 6;
-
-		Quaternion debugRot;
-		switch (debugRotIndex)
-		{
-		case 0: debugRot = Quaternion::Identity; break;
-		case 1: debugRot.SetRotationDeg(Vector3::AxisX, 180.0f); break;
-		case 2: debugRot.SetRotationDeg(Vector3::AxisZ, 90.0f); break;
-		case 3: debugRot.SetRotationDeg(Vector3::AxisZ, -90.0f); break;
-		case 4: debugRot.SetRotationDeg(Vector3::AxisX, -90.0f); break;
-		case 5: debugRot.SetRotationDeg(Vector3::AxisX, 90.0f); break;
-		}
-		m_dices[0].DebugSetRotationForCalibration(debugRot);
-
-		wchar_t debugBuf[64];
-		swprintf_s(debugBuf, L"===検証パターン: %d===\n", debugRotIndex);
-		OutputDebugStringW(debugBuf);
-		m_dices[0].GetFaceValue(); // ★これで6方向のy値が全部ログに出る
-	}
-	prevNState = nState;
-
-
-
-
-
 
 	// キーボード入力(1〜5キー)でToggleKeepが呼ばれる。呼び出し前後でkeepFMaskを比較する。
 	auto prevKeepMask = m_round.GetKeepMask();
@@ -363,6 +351,7 @@ void Game::Update()
 			if (IsGameFinished())
 			{
 				m_gamePhase = enGamePhase::Result;
+				m_prevResultSpaceState = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
 			}
 			else
 			{

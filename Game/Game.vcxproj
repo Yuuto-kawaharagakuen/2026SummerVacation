@@ -227,6 +227,7 @@
     <ClCompile Include="Dice.cpp" />
     <ClCompile Include="DiceInputController.cpp" />
     <ClCompile Include="DiceRound.cpp" />
+    <ClCompile Include="Explanation.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ResultView.cpp" />
@@ -246,6 +247,7 @@
     <ClInclude Include="Dice.h" />
     <ClInclude Include="DiceInputController.h" />
     <ClInclude Include="DiceRound.h" />
+    <ClInclude Include="Explanation.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="ResultView.h" />
     <ClInclude Include="ScoreBoardView.h" />

@@ -48,13 +48,4 @@ void DiceInputController::Update(DiceRound& round)
 	}
 	m_prevSpaceState = spaceDown;
 
-	// Rキーで手番リセット(テスト用の便利機能)
-	bool rDown = IsKeyDown('R');
-	if (rDown && !m_prevRState)
-	{
-		round.StartNewRound();
-		OutputDebugStringW(L"---- 手番リセット ----\n");
-		PrintState(round);
-	}
-	m_prevRState = rDown;
 }
