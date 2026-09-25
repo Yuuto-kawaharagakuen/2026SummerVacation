@@ -14,4 +14,5 @@ private:
 	int m_currentSlide = 0;
 	bool m_prevSpaceState = false;
 	bool m_prevBackState = false;
+	void PlayClickSE();
 };

@@ -11,5 +11,7 @@ public:
 private:
 	SpriteRender m_titleSprite;
 	bool m_prevSpaceState = false;
+	void PlayClickSE();
+	SoundSource* m_bgm = nullptr;
 };
 

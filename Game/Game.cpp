@@ -7,6 +7,8 @@
 #include "ScoreSelectController.h"
 #include "ResultView.h"
 #include "Title.h"
+#include "sound/SoundEngine.h"
+#include "sound/SoundSource.h"
 namespace
 {
 	void PrintDice(const wchar_t* label, const DiceValues& dice)
@@ -37,6 +39,21 @@ Game::~Game()
 		DeleteGO(skyCube);
 		skyCube = nullptr;
 	}
+}
+
+void DiceRoll() 
+{
+	SoundSource* se = NewGO<SoundSource>(0);
+	se->Init(2);          
+	se->Play(false);
+	se->SetVolume(0.3f);
+};
+
+void PlaySelectSE()
+{
+	SoundSource* se = NewGO<SoundSource>(0);
+	se->Init(3);
+	se->Play(false);
 }
 
 void Game::StartCpuTurn()
@@ -112,6 +129,7 @@ void Game::CpuDecideAndAct()
 		int categoryIndex = m_cpuPlayer.DecideCategoryToFill(m_round.GetDice(), m_board, m_cpuFilled);
 		if (categoryIndex >= 0)
 		{
+			PlaySelectSE();
 			int score = m_board[categoryIndex].calcScore(m_round.GetDice());
 			m_cpuScores[categoryIndex] = score;
 			m_cpuFilled[categoryIndex] = true;
@@ -154,6 +172,7 @@ void Game::SwitchTurn()
 		OutputDebugStringW(L"---- プレイヤーのターン ----\n");
 		//m_turnText.SetText(L"あなたのターン"); 
 		m_round.StartNewRound();
+		DiceRoll();
 		for (int i = 0; i < kDiceNum; i++)
 		{
 			m_dices[i].Roll();
@@ -169,7 +188,10 @@ bool Game::Start()
 
 	//PhysicsWorld::GetInstance()->EnableDrawDebugWireFrame();
 
-	PhysicsWorld::GetInstance()->SetGravity(Vector3(0.0f, -300.0f, 0.0f));
+	g_soundEngine->ResistWaveFileBank(2,"Assets/sound/Dice_roll.wav");
+	g_soundEngine->ResistWaveFileBank(3, "Assets/sound/select_sound.wav");
+
+	PhysicsWorld::GetInstance()->SetGravity(Vector3(0.0f, -800.0f, 0.0f));
 
 	m_whiteRender.Init("Assets/SIRO.DDS", 500.0f, 700.0f);
 	m_whiteRender.SetPosition({ -650.0f, 125.0f, 0.0f });
@@ -284,6 +306,7 @@ void Game::Update()
 	if (m_round.GetRollState() == enRollState::Rolling && !m_isDiceRolling)
 	{
 		m_isDiceRolling = true;
+		DiceRoll();
 		const auto& keepMask = m_round.GetKeepMask();
 		for (int i = 0; i < kDiceNum; i++)
 		{
@@ -332,6 +355,7 @@ void Game::Update()
 		bool confirmed = m_scoreSelectController.Update(m_board, m_playerFilled, confirmedIndex); 
 		if (confirmed)
 		{
+			PlaySelectSE();
 			int score = m_board[confirmedIndex].calcScore(m_round.GetDice());
 			m_playerScores[confirmedIndex] = score;
 			m_playerFilled[confirmedIndex] = true;

@@ -185,7 +185,7 @@ bool Dice::IsSettled() const
 	if (m_settleCheckDelay > 0) return false; 
 	Vector3 vel = m_rigidBody.GetLinearVelocity();
 	Vector3 angVel = m_rigidBody.GetAngularVelocity();
-	return vel.Length() < 1.0f && angVel.Length() < 1.0f;
+	return vel.Length() < 5.0f && angVel.Length() < 1.0f;
 }
 void Dice::StopCompletely()
 {

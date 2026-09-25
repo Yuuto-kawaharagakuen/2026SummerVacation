@@ -2,9 +2,13 @@
 #include "Explanation.h"
 #include "Game.h"
 #include "Title.h"
+#include "sound/SoundEngine.h"
+#include "sound/SoundSource.h"
 
 Explanation::Explanation()
 {
+	g_soundEngine->ResistWaveFileBank(1,"Assets/sound/click.wav");
+
 	m_slideSprites[0].Init("Assets/sprite/explanation_1.dds", 1920.0f, 1080.0f);
 	m_slideSprites[1].Init("Assets/sprite/explanation_2.dds", 1920.0f, 1080.0f);
 	m_slideSprites[2].Init("Assets/sprite/explanation_3.dds", 1920.0f, 1080.0f);
@@ -21,6 +25,13 @@ Explanation::~Explanation()
 {
 }
 
+void Explanation::PlayClickSE()
+{
+	SoundSource* se = NewGO<SoundSource>(0);
+	se->Init(1);          
+	se->Play(false);      
+	se->SetVolume(1.0f);  
+}
 void Explanation::Update()
 {
 	bool spaceState = (GetAsyncKeyState(VK_SPACE) & 0x8000) != 0;
@@ -28,6 +39,7 @@ void Explanation::Update()
 
 	if (spaceState && !m_prevSpaceState)
 	{
+		PlayClickSE();
 		if (m_currentSlide < kNumSlides - 1)
 		{
 			m_currentSlide++;
@@ -43,6 +55,7 @@ void Explanation::Update()
 
 	if (backState && !m_prevBackState)
 	{
+		PlayClickSE();
 		if (m_currentSlide > 0)
 		{
 			m_currentSlide--;

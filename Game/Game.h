@@ -38,7 +38,8 @@ public:
 	void Render(RenderContext& rc);
 
 private:
-
+	void DiceRollSE();
+	 
 	static const int kDiceNum = 5;
 	Dice m_dices[kDiceNum];
 	bool m_hasPrintedResult[kDiceNum] = {};
